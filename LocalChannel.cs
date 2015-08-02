@@ -18,7 +18,7 @@ namespace HeadlessSlClient
         private IIdentityMapper mapper;
         private int chatChannel = 0;
 
-        private Dictionary<UUID,ChannelMembership> nearbyAvatars;
+        private Dictionary<string, Dictionary<UUID, ChannelMembership>> nearby;
 
         public string SlName
         {
@@ -39,7 +39,7 @@ namespace HeadlessSlClient
         {
             get
             {
-                return nearbyAvatars.Values;
+                return nearby.SelectMany(i => i.Value.Values);
             }
         }
 
@@ -61,13 +61,16 @@ namespace HeadlessSlClient
         {
             this.client = client;
             this.mapper = mapper;
-            this.nearbyAvatars = new Dictionary<UUID, ChannelMembership>();
+            this.nearby = new Dictionary<string, Dictionary<UUID, ChannelMembership>>();
 
             var selfmember = new ChannelMembership();
             selfmember.IsOperator = false;
             selfmember.Position = PositionCategory.Whisper;
             selfmember.Subject = mapper.MapUser(client.Self.AgentID, client.Self.Name);
-            nearbyAvatars[client.Self.AgentID] = selfmember;
+
+            var thissimlist = new Dictionary<UUID, ChannelMembership>();
+            thissimlist.Add(client.Self.AgentID, selfmember);
+            nearby.Add(client.Network.CurrentSim.Name, thissimlist);
 
             client.Grid.CoarseLocationUpdate += OnLocationUpdate;
         }
@@ -75,6 +78,12 @@ namespace HeadlessSlClient
         public void OnLocationUpdate(object sender, CoarseLocationUpdateEventArgs e)
         {
             var evt = new ChannelMemberChangeEventArgs();
+            Dictionary<UUID, ChannelMembership> nearbyAvatars;
+            if(!nearby.TryGetValue(e.Simulator.Name, out nearbyAvatars))
+            {
+                nearbyAvatars = new Dictionary<UUID, ChannelMembership>();
+                nearby.Add(e.Simulator.Name, nearbyAvatars);
+            }
             
             foreach(var i in e.NewEntries)
             {
@@ -140,7 +149,6 @@ namespace HeadlessSlClient
         {
             var mypos = client.Self.SimPosition;
             var otherpos = e.Simulator.AvatarPositions[i];
-            //Avatar avi = e.Simulator.ObjectsAvatars.Find(a => a.ID == i);
             var distance = Vector3.Distance(mypos, otherpos);
 
             if(distance <= WHISPERDISTANCE)
