@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HeadlessSlClient</RootNamespace>
     <AssemblyName>HeadlessSlClient</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="OpenMetaverse">
@@ -53,10 +55,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheDictionary.cs" />
     <Compile Include="DataTypes.cs" />
     <Compile Include="GroupChannel.cs" />
     <Compile Include="Helpers.cs" />
-    <Compile Include="IdentityMapper.cs" />
+    <Compile Include="IdentityMappers\IdentityMapperSync.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IdentityMappers\IdentityMapperAsync.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Irc\ClientConnection.cs" />
     <Compile Include="Irc\Message.cs" />
@@ -70,9 +76,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Notes.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

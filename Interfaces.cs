@@ -58,8 +58,6 @@ namespace HeadlessSlClient
         public MessageType Type;
         public DateTime Timestamp;
         public MappedIdentity Sender;
-        private MappedIdentity mappedIdentity;
-        private MessageType messageType;
 
         public IntermediateMessage() { }
 
@@ -97,7 +95,6 @@ namespace HeadlessSlClient
 
     interface IIdentityMapper
     {
-        MappedIdentity MapUser(MappedIdentity Identity);
         MappedIdentity MapUser(string IrcName);
         MappedIdentity MapUser(UUID SlId, string SlName = null);
 
