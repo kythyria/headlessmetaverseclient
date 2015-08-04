@@ -145,7 +145,7 @@ namespace HeadlessSlClient.Irc
                     OnTopic(msg);
                     break;
                 default:
-                    SendFromServer("421", msg.Command, "Not implemented!");
+                    SendFromServer("421", username, msg.Command, "Not implemented!");
                     break;
             }
         }
@@ -187,7 +187,7 @@ namespace HeadlessSlClient.Irc
 
         private void OnMode(Message msg)
         {
-            if (msg.Argv.Count < 1) { SendFromServer(461, "MODE", "Not enough parameters"); return; }
+            if (msg.Argv.Count < 1) { SendFromServer(461, username, "MODE", "Not enough parameters"); return; }
             if (!channels.ContainsKey(msg.Argv[0]))
             {
                 SendFromServer(502, "Don't touch their modes!");
@@ -205,7 +205,7 @@ namespace HeadlessSlClient.Irc
                 return;
             }
 
-            SendFromServer(RPL_CHANNELMODEIS, "MODE", msg.Argv[0], "+t");
+            SendFromServer(RPL_CHANNELMODEIS, "MODE", username, msg.Argv[0], "+t");
         }
 
         private void OnNames(string chan)
@@ -299,7 +299,7 @@ namespace HeadlessSlClient.Irc
                     this.channels[i.IrcName] = i;
                     SendFromClient("JOIN", i.IrcName);
                     //SendFromServer(RPL_CHANNELMODEIS, i.IrcName, "+t");
-                    SendFromServer(RPL_TOPIC, i.IrcName, i.Topic);
+                    SendFromServer(RPL_TOPIC, username, i.IrcName, i.Topic);
                     OnNames(i.IrcName);
                 }
             }
