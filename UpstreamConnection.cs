@@ -50,11 +50,14 @@ namespace HeadlessSlClient
 
         private void InitChannels()
         {
-            channels = new Dictionary<UUID, GroupChannel>();
+            channels = channels ?? new Dictionary<UUID, GroupChannel>();
             foreach(var i in groups)
             {
-                var c = new GroupChannel(client, mapper, i.Value);
-                channels[i.Value.ID] = c;
+                if (!channels.ContainsKey(i.Key))
+                {
+                    var c = new GroupChannel(client, mapper, i.Value);
+                    channels[i.Value.ID] = c;
+                }
             }
         }
 
