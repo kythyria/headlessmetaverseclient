@@ -288,13 +288,15 @@ namespace HeadlessSlClient.Irc
 
         private void ChannelListLoaded(IEnumerable<IChannel> channels)
         {
-
             foreach (var i in channels)
             {
-                RegisterChannelHandlers(i);
-                this.channels[i.IrcName] = i;
-                SendFromClient("JOIN", i.IrcName);
-                OnNames(i.IrcName);
+                if (!this.channels.ContainsKey(i.IrcName))
+                {
+                    RegisterChannelHandlers(i);
+                    this.channels[i.IrcName] = i;
+                    SendFromClient("JOIN", i.IrcName);
+                    OnNames(i.IrcName);
+                }
             }
         }
 

@@ -73,12 +73,16 @@ namespace HeadlessSlClient
             nearby.Add(client.Network.CurrentSim.Name, thissimlist);
 
             client.Grid.CoarseLocationUpdate += OnLocationUpdate;
+            client.Self.ChatFromSimulator += OnLocalChat;
         }
 
         public void OnLocationUpdate(object sender, CoarseLocationUpdateEventArgs e)
         {
             var evt = new ChannelMemberChangeEventArgs();
             Dictionary<UUID, ChannelMembership> nearbyAvatars;
+
+            if (e.Simulator.Name != client.Network.CurrentSim.Name) return;
+
             if(!nearby.TryGetValue(e.Simulator.Name, out nearbyAvatars))
             {
                 nearbyAvatars = new Dictionary<UUID, ChannelMembership>();
@@ -148,7 +152,11 @@ namespace HeadlessSlClient
         private PositionCategory CategorisePosition(UUID i, CoarseLocationUpdateEventArgs e)
         {
             var mypos = client.Self.SimPosition;
-            var otherpos = e.Simulator.AvatarPositions[i];
+            Vector3 otherpos;
+            if(!e.Simulator.AvatarPositions.TryGetValue(i, out otherpos))
+            {
+                return PositionCategory.SameRegionGroup;
+            }
             var distance = Vector3.Distance(mypos, otherpos);
 
             if(distance <= WHISPERDISTANCE)
@@ -198,7 +206,15 @@ namespace HeadlessSlClient
             }
 
             msg.Timestamp = DateTime.UtcNow;
-            
+
+
+
+            if (e.SourceType == ChatSourceType.System)
+            {
+                msg.Type = MessageType.System;
+                msg.Sender = mapper.Grid;
+            }
+
             if(e.Type == OpenMetaverse.ChatType.Shout)
             {
                 msg.Type = MessageType.Shout;
