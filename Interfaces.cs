@@ -87,6 +87,7 @@ namespace HeadlessSlClient
         string SlName { get; }
         string IrcName { get;  }
         string Topic { get; }
+
         IEnumerable<ChannelMembership> Members { get; }
         event ChannelMemberChangeHandler MembersChanged;
         void SendMessage(IntermediateMessage msg);

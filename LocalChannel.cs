@@ -113,14 +113,17 @@ namespace HeadlessSlClient
                 if (i == client.Self.AgentID) { continue; }
 
                 var detail = new ChannelMemberChangeEventArgs.ChangeDetails();
-                detail.Subject = nearbyAvatars[i].Subject;
-                detail.IsOperator = false;
-                detail.WasOperator = false;
-                detail.NewPosition = PositionCategory.Distant;
-                detail.OldPosition = nearbyAvatars[i].Position;
-                evt.RemovedMembers.Add(detail);
+                if (nearbyAvatars.ContainsKey(i))
+                {
+                    detail.Subject = nearbyAvatars[i].Subject;
+                    detail.IsOperator = false;
+                    detail.WasOperator = false;
+                    detail.NewPosition = PositionCategory.Distant;
+                    detail.OldPosition = nearbyAvatars[i].Position;
+                    evt.RemovedMembers.Add(detail);
 
-                nearbyAvatars.Remove(i);
+                    nearbyAvatars.Remove(i);
+                }
             }
 
             foreach(var i in nearbyAvatars)

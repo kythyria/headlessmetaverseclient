@@ -20,6 +20,9 @@ namespace HeadlessSlClient.Irc
         const string LOCALHOST = "local.sl";
         const string GROUPHOST = "group.grid.sl";
 
+        const int RPL_TOPIC = 332;
+        const int RPL_CHANNELMODEIS = 324;
+
         Socket connection;
         StreamWriter writer;
         StreamReader reader;
@@ -179,7 +182,7 @@ namespace HeadlessSlClient.Irc
 
         private void OnTopic(Message msg)
         {
-            Send(GROUPHOST, "TOPIC", msg.Argv[0], channels[msg.Argv[0]].Topic);
+            SendFromServer(RPL_TOPIC, msg.Argv[0], channels[msg.Argv[0]].Topic);
         }
 
         private void OnMode(Message msg)
@@ -202,7 +205,7 @@ namespace HeadlessSlClient.Irc
                 return;
             }
 
-            Send(GROUPHOST, "MODE", msg.Argv[0], "+t");
+            SendFromServer(RPL_CHANNELMODEIS, "MODE", msg.Argv[0], "+t");
         }
 
         private void OnNames(string chan)
@@ -295,6 +298,8 @@ namespace HeadlessSlClient.Irc
                     RegisterChannelHandlers(i);
                     this.channels[i.IrcName] = i;
                     SendFromClient("JOIN", i.IrcName);
+                    //SendFromServer(RPL_CHANNELMODEIS, i.IrcName, "+t");
+                    SendFromServer(RPL_TOPIC, i.IrcName, i.Topic);
                     OnNames(i.IrcName);
                 }
             }
