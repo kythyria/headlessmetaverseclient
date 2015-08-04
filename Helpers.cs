@@ -24,10 +24,22 @@ namespace HeadlessSlClient
             return components.CamelCase(joiner);
         }
 
-        public static string CamelCase (this IEnumerable<string> source, string joiner = "")
+        public static string CamelCase(this IEnumerable<string> source, string joiner = "")
         {
             var words = source.Where(i=>i.Length > 0).Select(i => i.Substring(0, 1).ToUpper() + i.Substring(1).ToLower());
             return string.Join(joiner, words);
+        }
+
+        public static T WaitOrDefault<T>(this Task<T> self, int millisecondsTimeOut)
+        {
+            if(self.Wait(millisecondsTimeOut))
+            {
+                return self.Result;
+            }
+            else
+            {
+                return default(T);
+            }
         }
     }
 }

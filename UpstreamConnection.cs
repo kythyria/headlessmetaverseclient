@@ -30,7 +30,7 @@ namespace HeadlessSlClient
             this.client = new GridClient();
             client.Settings.LOGIN_SERVER = loginUri;
 
-            mapper = new IdentityMapper(gridName, client);
+            mapper = new SyncAsyncMapper(new IdentityMapperAsync(client, gridName));
             oneOnOnesessions = new Dictionary<UUID, UUID>();
         }
 

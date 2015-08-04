@@ -63,6 +63,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="IdentityMappers\IdentityMapperAsync.cs" />
+    <Compile Include="IdentityMappers\SyncAsyncMapper.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="Irc\ClientConnection.cs" />
     <Compile Include="Irc\Message.cs" />
