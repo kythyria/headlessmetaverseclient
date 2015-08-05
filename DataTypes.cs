@@ -28,7 +28,25 @@ namespace HeadlessSlClient
         public OpenMetaverse.UUID AvatarID;
         public string SlName;
         public string IrcNick;
-        public string IrcFullId;
+        public string IrcIdent;
+        public string IrcDomain;
+        public string IrcFullId
+        {
+            get
+            {
+                var s = new StringBuilder();
+                if(IrcNick != null)
+                {
+                    s.Append(IrcNick).Append("!");
+                }
+                if(IrcIdent != null)
+                {
+                    s.Append(IrcIdent).Append("@");
+                }
+                s.Append(IrcDomain);
+                return s.ToString();
+            }
+        }
 
         public MappedIdentity(IdentityCategory identityCategory)
         {

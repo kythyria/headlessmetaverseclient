@@ -35,12 +35,13 @@ namespace HeadlessSlClient
             gridIdentity = new MappedIdentity(IdentityCategory.System);
             gridIdentity.AvatarID = UUID.Zero;
             gridIdentity.IrcNick = "**SYSTEM**";
-            gridIdentity.IrcFullId = gridIdentity.IrcNick + "!" + gridName + "@grid.sl";
+            gridIdentity.IrcIdent = gridName;
+            gridIdentity.IrcDomain = "grid.sl";
             gridIdentity.SlName = gridName;
 
             clientIdentity = new MappedIdentity(IdentityCategory.System);
             clientIdentity.AvatarID = UUID.Zero;
-            clientIdentity.IrcFullId = "local.sl";
+            clientIdentity.IrcDomain = "local.sl";
         }
 
         public MappedIdentity MapUser(MappedIdentity Identity)
@@ -52,7 +53,8 @@ namespace HeadlessSlClient
         {
             var identity = new MappedIdentity(IdentityCategory.Agent);
             identity.IrcNick = IrcName;
-            identity.IrcFullId = IrcName + "!agent@" + AGENTHOST;
+            identity.IrcIdent = "agent";
+            identity.IrcDomain = AGENTHOST;
             identity.SlName = String.Join(" ", IrcName.Split('.'));
             
             if(UsernameToKeyCache.ContainsKey(IrcName))
@@ -88,7 +90,8 @@ namespace HeadlessSlClient
             }
 
             identity.IrcNick = MakeIrcName(identity.SlName, ".");
-            identity.IrcFullId = identity.IrcNick + "!"+ SlId.ToString() +"@" + AGENTHOST;
+            identity.IrcIdent = SlId.ToString();
+            identity.IrcDomain = AGENTHOST;
 
             return identity;
         }
@@ -99,7 +102,8 @@ namespace HeadlessSlClient
             identity.SlName = SlName;
             identity.AvatarID = SlId;
             identity.IrcNick = MakeIrcName(SlName, ".");
-            identity.IrcFullId = identity.IrcNick + "!object@" + OBJECTHOST;
+            identity.IrcIdent = "object";
+            identity.IrcDomain = OBJECTHOST;
 
             return identity;
         }

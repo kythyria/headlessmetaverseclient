@@ -43,29 +43,36 @@ namespace HeadlessSlClient
         {
             get
             {
-                /*List<ChatSessionMember> rawmembers;
-                if(!client.Self.GroupChatSessions.TryGetValue(group.ID, out rawmembers))
+                var rawmembers = new List<ChatSessionMember>();
+
+                if (!client.Self.GroupChatSessions.TryGetValue(group.ID, out rawmembers))
                 {
                     JoinGroupchat();
                     rawmembers = client.Self.GroupChatSessions[group.ID];
                 }
 
                 var outlist = new List<ChannelMembership>();
-                foreach (var i in rawmembers)
+
+                client.Self.GroupChatSessions.Lock(d =>
                 {
-                    var item = new ChannelMembership();
-                    item.IsOperator = i.IsModerator;
-                    item.Subject = mapper.MapUser(i.AvatarKey);
-                    outlist.Add(item);
-                }
-                return outlist;*/
-                var cm = new ChannelMembership();
-                cm.IsOperator = false;
-                cm.Position = PositionCategory.Talk;
-                cm.Subject = mapper.MapUser(client.Self.AgentID);
-                var list = new List<ChannelMembership>();
-                list.Add(cm);
-                return list;
+                    if (rawmembers.Count(i => i.AvatarKey == client.Self.AgentID) == 0)
+                    {
+                        var cm = new ChannelMembership();
+                        cm.IsOperator = false;
+                        cm.Position = PositionCategory.Talk;
+                        cm.Subject = mapper.MapUser(client.Self.AgentID);
+                        outlist.Add(cm);
+                    }
+
+                    foreach (var i in rawmembers)
+                    {
+                        var item = new ChannelMembership();
+                        item.IsOperator = i.IsModerator;
+                        item.Subject = mapper.MapUser(i.AvatarKey);
+                        outlist.Add(item);
+                    }
+                });
+                return outlist;
             }
                 
         }

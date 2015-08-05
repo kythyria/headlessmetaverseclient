@@ -96,7 +96,6 @@ namespace HeadlessSlClient
                 client.Self.IM += OnIM;
 
                 client.Groups.CurrentGroups += OnGroupListLoaded;
-                client.Groups.RequestCurrentGroups();
             }
 
             return success;
@@ -259,7 +258,7 @@ namespace HeadlessSlClient
         private void OnSimConnecting(object sender, SimConnectingEventArgs e)
         {
             var msg = new IntermediateMessage(mapper.Grid, MessageType.ClientNotice);
-            msg.Payload = "Connecting to " + e.Simulator.Name;
+            msg.Payload = "Connecting to simulator";
             if (ReceiveMessage != null)
             {
                 ReceiveMessage(null, msg);

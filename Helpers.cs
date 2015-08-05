@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using OpenMetaverse;
 
 namespace HeadlessSlClient
 {
@@ -39,6 +41,16 @@ namespace HeadlessSlClient
             else
             {
                 return default(T);
+            }
+        }
+
+        public static void Lock<TKey,TValue>(this InternalDictionary<TKey, TValue> dict, Action<InternalDictionary<TKey,TValue>> block)
+        {
+            var lockTargetField = dict.GetType().GetField("Dictionary", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance);
+            var lockTarget = lockTargetField.GetValue(dict);
+            lock(lockTarget)
+            {
+                block(dict);
             }
         }
     }

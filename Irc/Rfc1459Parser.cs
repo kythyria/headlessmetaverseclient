@@ -31,7 +31,7 @@ namespace HeadlessSlClient.Irc
             }
 
             m = scanner.Match(reWord);
-            msg.Command = m.Groups[1].Value;
+            msg.Command = m.Groups[1].Value.ToUpperInvariant();
 
             while(!scanner.AtEnd)
             {

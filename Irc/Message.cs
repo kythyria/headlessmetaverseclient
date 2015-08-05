@@ -8,9 +8,11 @@ namespace HeadlessSlClient.Irc
 {
     class Message
     {
+        private string command;
+
         public Dictionary<string, string> Tags { get; set; }
         public string Sender { get; set; }
-        public string Command { get; set; }
+        public string Command { get { return command; } set { command = value.ToUpperInvariant(); } }
         public List<string> Argv { get; set; }
 
         public Message()

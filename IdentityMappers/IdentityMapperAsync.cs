@@ -75,7 +75,7 @@ namespace HeadlessSlClient
 
             grid = new MappedIdentity(IdentityCategory.System);
             grid.AvatarID = UUID.Zero;
-            grid.IrcFullId = gridDomain;
+            grid.IrcDomain = gridDomain;
             grid.SlName = gridDomain;
             grid.IrcNick = gridDomain;
 
@@ -188,7 +188,8 @@ namespace HeadlessSlClient
             identity.SlName = SlName ?? "Object";
             identity.AvatarID = slId;
             identity.IrcNick = MakeIrcName(SlName, ".");
-            identity.IrcFullId = identity.IrcNick + "!" + slId + "@object." + gridDomain;
+            identity.IrcIdent = slId.ToString();
+            identity.IrcDomain = "object." + gridDomain;
 
             return Task.FromResult(identity);
         }
@@ -263,7 +264,8 @@ namespace HeadlessSlClient
                         newid.AvatarID = i.Key;
                         newid.SlName = i.Value;
                         newid.IrcNick = i.Value.CamelCase(".");
-                        newid.IrcFullId = string.Format("{0}!{1}@{2}.{3}", newid.IrcNick, i.Key, agentSubdomain, gridDomain);
+                        newid.IrcIdent = i.Key.ToString();
+                        newid.IrcDomain = agentSubdomain + "." + gridDomain;
 
                         AgentsByIrcNick[newid.IrcNick] = newid;
                         AgentsByUuid[i.Key] = newid;

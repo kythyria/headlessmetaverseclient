@@ -21,6 +21,7 @@ namespace HeadlessSlClient.Irc
         const string GROUPHOST = "group.grid.sl";
 
         const int RPL_TOPIC = 332;
+        const int RPL_CHANCREATED = 333;
         const int RPL_CHANNELMODEIS = 324;
 
         Socket connection;
@@ -205,10 +206,10 @@ namespace HeadlessSlClient.Irc
                 return;
             }
 
-            SendFromServer(RPL_CHANNELMODEIS, "MODE", username, msg.Argv[0], "+t");
+            SendFromServer(RPL_CHANNELMODEIS, username, msg.Argv[0], "+t");
         }
 
-        private void OnNames(string chan)
+        private IEnumerable<Message> NamesReply(string chan)
         {
             if (channels.ContainsKey(chan))
             {
@@ -231,10 +232,15 @@ namespace HeadlessSlClient.Irc
                             reply.Add(j.Subject.IrcNick);
                         }
                     }
-                    SendFromServer(353, username, "=", chan, String.Join(" ", reply));
+                    yield return new Message(LOCALHOST, 353, username, "=", chan, String.Join(" ", reply));
                 }
             }
-            SendFromServer(366, username, chan, "End of NAMES list");
+            yield return new Message(LOCALHOST, 366, username, chan, "End of NAMES list");
+        }
+
+        private void OnNames(string chan)
+        {
+            Send(NamesReply(chan));
         }
 
         private void OnWho(Message msg)
@@ -246,7 +252,8 @@ namespace HeadlessSlClient.Irc
             {
                 foreach(var i in channels[key].Members)
                 {
-                    var reply = new List<string>(new string[]{ username, key, "user", "agent.grid.sl"});
+                    var reply = new List<string>(new string[] { username, key, i.Subject.IrcIdent, i.Subject.IrcDomain });
+                    reply.Add(mapper.Grid.IrcDomain);
                     reply.Add(i.Subject.IrcNick);
                     if (i.IsOperator) { reply.Add("H@"); }
                     else if (i.Position <= PositionCategory.Talk) { reply.Add("H+");}
@@ -278,6 +285,8 @@ namespace HeadlessSlClient.Irc
                 string firstname = names[0];
                 string lastname = names.Count() == 1 ? "resident" : names[1];
 
+                SendFromServer("NOTICE", username, "Connecting to the grid");
+
                 if (upstream.Connect(firstname, lastname, password))
                 {
                     selfId = mapper.MapUser(username);
@@ -297,12 +306,18 @@ namespace HeadlessSlClient.Irc
                 {
                     RegisterChannelHandlers(i);
                     this.channels[i.IrcName] = i;
-                    SendFromClient("JOIN", i.IrcName);
-                    //SendFromServer(RPL_CHANNELMODEIS, i.IrcName, "+t");
-                    SendFromServer(RPL_TOPIC, username, i.IrcName, i.Topic);
-                    OnNames(i.IrcName);
+                    Send(ChannelJoinMessages(i));
                 }
             }
+        }
+
+        private IEnumerable<Message> ChannelJoinMessages(IChannel channel)
+        {
+            yield return new Message(selfId.IrcFullId, "JOIN", channel.IrcName);
+            yield return new Message(LOCALHOST, RPL_TOPIC, username, channel.IrcName, channel.Topic);
+            yield return new Message(LOCALHOST, RPL_CHANNELMODEIS, username, channel.IrcName, "+t");
+            yield return new Message(LOCALHOST, RPL_CHANCREATED, username, channel.IrcName, mapper.Grid.IrcDomain, "0");
+            foreach (var i in NamesReply(channel.IrcName)) { yield return i; }
         }
 
         private void RegisterChannelHandlers(IChannel i)
@@ -427,6 +442,18 @@ namespace HeadlessSlClient.Irc
                     payload = "\x01" + "ACTION " + payload.Substring(4) + "\x01";
                 }
                 Send(msg.Sender.IrcFullId, "PRIVMSG", username, payload);
+            }
+        }
+
+        private void Send(IEnumerable<Message> messages)
+        {
+            lock(connection)
+            {
+                foreach(var i in messages)
+                {
+                    writer.Write(parser.Emit(i) + "\r\n");
+                }
+                writer.Flush();
             }
         }
 
