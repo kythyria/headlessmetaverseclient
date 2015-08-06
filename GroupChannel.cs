@@ -145,23 +145,8 @@ namespace HeadlessSlClient
 
         private bool JoinGroupchat()
         {
-            var waiter = new System.Threading.AutoResetEvent(false);
-            bool success = false;
-
-            EventHandler<GroupChatJoinedEventArgs> handler;
-            handler = delegate(object o, GroupChatJoinedEventArgs e)
-            {
-                if(e.SessionID == group.ID)
-                {
-                    success = e.Success;
-                    waiter.Set();
-                }
-            };
-            client.Self.GroupChatJoined += handler;
-            client.Self.RequestJoinGroupChat(group.ID);
-            waiter.WaitOne(10000);
-            client.Self.GroupChatJoined -= handler;
-            return success;
+            var task = client.Self.JoinGroupChatAsync(group.ID);
+            return task.Wait(5000) && task.Result;
         }
     }
 }
