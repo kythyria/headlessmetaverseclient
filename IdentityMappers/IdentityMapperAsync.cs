@@ -187,7 +187,7 @@ namespace HeadlessSlClient
             var identity = new MappedIdentity(IdentityCategory.Object);
             identity.SlName = SlName ?? "Object";
             identity.AvatarID = slId;
-            identity.IrcNick = MakeIrcName(SlName, ".");
+            identity.IrcNick = String.Join(".", SlName.Split(' ')); ;
             identity.IrcIdent = slId.ToString();
             identity.IrcDomain = "object." + gridDomain;
 
@@ -263,7 +263,7 @@ namespace HeadlessSlClient
                         newid = new MappedIdentity(IdentityCategory.Agent);
                         newid.AvatarID = i.Key;
                         newid.SlName = i.Value;
-                        newid.IrcNick = i.Value.CamelCase(".");
+                        newid.IrcNick = String.Join(".", i.Value.Split(' '));
                         newid.IrcIdent = i.Key.ToString();
                         newid.IrcDomain = agentSubdomain + "." + gridDomain;
 

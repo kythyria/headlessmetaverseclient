@@ -23,6 +23,7 @@ namespace HeadlessSlClient.Irc
         const int RPL_TOPIC = 332;
         const int RPL_CHANCREATED = 333;
         const int RPL_CHANNELMODEIS = 324;
+        const int RPL_USERHOST = 302;
 
         Socket connection;
         StreamWriter writer;
@@ -114,7 +115,7 @@ namespace HeadlessSlClient.Irc
                 case "PART":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(461, "PART", "Not enough parameters");
+                        SendFromServer(461, username, "PART", "Not enough parameters");
                         break;
                     }
                     SendFromClient("JOIN", msg.Argv[0]);
@@ -126,7 +127,7 @@ namespace HeadlessSlClient.Irc
                     OnWho(msg);
                     break;
                 case "NAMES":
-                    if (msg.Argv.Count < 1) { SendFromServer(461, "NAMES", "Not enough parameters"); break; }
+                    if (msg.Argv.Count < 1) { SendFromServer(461, username, "NAMES", "Not enough parameters"); break; }
                     OnNames(msg.Argv[0]);
                     break;
                 case "MODE":
@@ -135,7 +136,7 @@ namespace HeadlessSlClient.Irc
                 case "TOPIC":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(461, "TOPIC", "Not enough parameters");
+                        SendFromServer(461, username, "TOPIC", "Not enough parameters");
                         break;
                     }
                     if (msg.Argv.Count > 1)
@@ -144,6 +145,15 @@ namespace HeadlessSlClient.Irc
                         break;
                     }
                     OnTopic(msg);
+                    break;
+                case "USERHOST":
+                    if (msg.Argv.Count < 1)
+                    {
+                        SendFromServer(461, username, "USERHOST", "Not enough parameters");
+                        break;
+                    }
+                    var id = mapper.MapUser(msg.Argv[0]);
+                    SendFromServer(RPL_USERHOST, username, String.Format("{0}=+{1}@{2}", id.IrcNick, id.IrcIdent, id.IrcDomain));
                     break;
                 default:
                     SendFromServer("421", username, msg.Command, "Not implemented!");
@@ -155,7 +165,7 @@ namespace HeadlessSlClient.Irc
         {
             if (msg.Argv.Count < 2)
             {
-                SendFromServer(461, "PRIVMSG", "Not enough parameters");
+                SendFromServer(461, username, "PRIVMSG", "Not enough parameters");
                 return;
             }
 
@@ -289,7 +299,7 @@ namespace HeadlessSlClient.Irc
 
                 if (upstream.Connect(firstname, lastname, password))
                 {
-                    selfId = mapper.MapUser(username);
+                    selfId = mapper.Client;
                     SendFromServer(1, username, string.Format("Welcome to the Headless SL Client {0}", selfId.IrcFullId));
                     SendFromServer(2, username, "Your host is sl.local, running HeadlessSlClient 0.1");
                     SendFromServer(5, username, "NICKLEN=63 MODES=,,,t PREFIX=(ov)@+");
@@ -315,7 +325,6 @@ namespace HeadlessSlClient.Irc
         {
             yield return new Message(selfId.IrcFullId, "JOIN", channel.IrcName);
             yield return new Message(LOCALHOST, RPL_TOPIC, username, channel.IrcName, channel.Topic);
-            yield return new Message(LOCALHOST, RPL_CHANNELMODEIS, username, channel.IrcName, "+t");
             yield return new Message(LOCALHOST, RPL_CHANCREATED, username, channel.IrcName, mapper.Grid.IrcDomain, "0");
             foreach (var i in NamesReply(channel.IrcName)) { yield return i; }
         }
