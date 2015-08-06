@@ -281,7 +281,7 @@ namespace HeadlessSlClient
                                         from res in results
                                         where req.AgentId == res.AvatarID || req.SlName == res.SlName
                                         select new { Request = req, Response = res };
-                foreach (var i in fulfilledRequests)
+                foreach (var i in fulfilledRequests.ToList())
                 {
                     agentRequests.Remove(i.Request);
                     i.Request.TaskSource.SetResult(i.Response);

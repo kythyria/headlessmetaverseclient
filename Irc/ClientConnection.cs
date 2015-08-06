@@ -19,6 +19,7 @@ namespace HeadlessSlClient.Irc
 
         const string LOCALHOST = "local.sl";
         const string GROUPHOST = "group.grid.sl";
+        const string LOCALNICK = "~SYSTEM~!client@local.sl";
 
         const int RPL_TOPIC = 332;
         const int RPL_CHANCREATED = 333;
@@ -380,6 +381,12 @@ namespace HeadlessSlClient.Irc
 
         private void ReceiveChannelMessage(IChannel target, IntermediateMessage msg)
         {
+            if(msg.Type == MessageType.ClientNotice)
+            {
+                Send(LOCALNICK, "PRIVMSG", target.IrcName, msg.Payload);
+                return;
+            }
+
             var payload = msg.Payload;
             var isAction = false;
             var isEmote = false;

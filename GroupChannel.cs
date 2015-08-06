@@ -50,9 +50,14 @@ namespace HeadlessSlClient
                     bool success = JoinGroupchat();
                     if (!success)
                     {
-                        SendMessageDownstream(IntermediateMessage.ClientNotice(mapper.Client, "Could not join groupchat"));
+                        SendMessageDownstream(IntermediateMessage.ClientNotice(mapper.Client, "Could not join group " + SlName));
                     }
-                    rawmembers = client.Self.GroupChatSessions[group.ID];
+
+                    //TODO: More reliaaaable joins.
+                    if (!client.Self.GroupChatSessions.TryGetValue(group.ID, out rawmembers))
+                    {
+                        rawmembers = new List<ChatSessionMember>();
+                    }
                 }
 
                 System.Diagnostics.Debug.WriteLine("GroupChannel \"{0}\" has {1} member(s).", IrcName, rawmembers.Count);
@@ -75,7 +80,16 @@ namespace HeadlessSlClient
                         var item = new ChannelMembership();
                         item.IsOperator = i.IsModerator;
                         item.Subject = mapper.MapUser(i.AvatarKey);
-                        outlist.Add(item);
+                        if(item.Subject != null)
+                        {
+                            outlist.Add(item);
+                        }
+                        else
+                        {
+                            var s = "ERROR: GroupChannel: Error getting name for {0}".Format(i.AvatarKey);
+                            Console.WriteLine(s);
+                            System.Diagnostics.Debug.WriteLine(s);
+                        }
                     }
                 });
                 return outlist;
@@ -97,7 +111,7 @@ namespace HeadlessSlClient
                 bool success = JoinGroupchat();
                 if(!success)
                 {
-                    SendMessageDownstream(IntermediateMessage.ClientNotice(mapper.Client, "Could not join groupchat"));
+                    SendMessageDownstream(IntermediateMessage.ClientNotice(mapper.Client, "Could not join group " + SlName));
                     return;
                 }
             }

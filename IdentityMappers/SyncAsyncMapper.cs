@@ -8,6 +8,7 @@ namespace HeadlessSlClient
 {
     class SyncAsyncMapper : IIdentityMapper
     {
+        const int TIMEOUT = 50000;
         IAsyncIdentityMapper asyncMapper;
 
         public SyncAsyncMapper(IAsyncIdentityMapper mapper)
@@ -18,7 +19,7 @@ namespace HeadlessSlClient
         public MappedIdentity MapUser(string IrcName)
         {
            var task = asyncMapper.MapAgent(IrcName);
-           if(task.Wait(10000))
+           if(task.Wait(TIMEOUT))
            {
                return task.Result;
            }
@@ -30,27 +31,27 @@ namespace HeadlessSlClient
 
         public MappedIdentity MapUser(OpenMetaverse.UUID SlId, string SlName = null)
         {
-            return asyncMapper.MapAgent(SlId, SlName).WaitOrDefault(10000);
+            return asyncMapper.MapAgent(SlId, SlName).WaitOrDefault(TIMEOUT);
         }
 
         public MappedIdentity MapObject(OpenMetaverse.UUID SlId, string SlName = null)
         {
-            return asyncMapper.MapObject(SlId, SlName).WaitOrDefault(10000);
+            return asyncMapper.MapObject(SlId, SlName).WaitOrDefault(TIMEOUT);
         }
 
         public OpenMetaverse.UUID MapChannelName(string IrcName)
         {
-            return asyncMapper.MapGroup(IrcName).WaitOrDefault(10000);
+            return asyncMapper.MapGroup(IrcName).WaitOrDefault(TIMEOUT);
         }
 
         public string MapGroup(OpenMetaverse.UUID group)
         {
-            return asyncMapper.MapGroup(group).WaitOrDefault(10000);
+            return asyncMapper.MapGroup(group).WaitOrDefault(TIMEOUT);
         }
 
         public string MapGroup(OpenMetaverse.Group group)
         {
-            return asyncMapper.MapGroup(group).WaitOrDefault(10000);
+            return asyncMapper.MapGroup(group).WaitOrDefault(TIMEOUT);
         }
 
         public MappedIdentity Grid
