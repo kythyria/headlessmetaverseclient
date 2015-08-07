@@ -9,10 +9,13 @@ namespace HeadlessSlClient
 {
     class GroupChannel : IChannel, IUpstreamChannel
     {
+        private object syncRoot = new object();
+
         string slName, ircName, topic;
         IIdentityMapper mapper;
         GridClient client;
         Group group;
+        ChannelState state = ChannelState.Unconnected;
 
         public GroupChannel(GridClient client, IIdentityMapper mapper, Group group)
         {
@@ -47,11 +50,7 @@ namespace HeadlessSlClient
 
                 if (!client.Self.GroupChatSessions.TryGetValue(group.ID, out rawmembers))
                 {
-                    bool success = JoinGroupchat();
-                    if (!success)
-                    {
-                        SendMessageDownstream(IntermediateMessage.ClientNotice(mapper.Client, "Could not join group " + SlName));
-                    }
+                    if (State != ChannelState.Failed) { JoinGroupchat(); }
 
                     //TODO: More reliaaaable joins.
                     if (!client.Self.GroupChatSessions.TryGetValue(group.ID, out rawmembers))
@@ -97,11 +96,6 @@ namespace HeadlessSlClient
                 
         }
 
-        private void BeginSession()
-        {
-            throw new NotImplementedException();
-        }
-
         public event ChannelMemberChangeHandler MembersChanged;
 
         public void SendMessage(IntermediateMessage msg)
@@ -109,11 +103,7 @@ namespace HeadlessSlClient
             if(!client.Self.GroupChatSessions.ContainsKey(group.ID))
             {
                 bool success = JoinGroupchat();
-                if(!success)
-                {
-                    SendMessageDownstream(IntermediateMessage.ClientNotice(mapper.Client, "Could not join group " + SlName));
-                    return;
-                }
+                if(!success) return;
             }
 
             client.Self.InstantMessageGroup(msg.Sender.SlName, group.ID, msg.Payload);
@@ -143,25 +133,44 @@ namespace HeadlessSlClient
             }
         }
 
+        public ChannelState State
+        {
+            get
+            {
+                lock(syncRoot) return state;
+            }
+        }
+
+        private Task<bool> joinTask;
+        private ChannelState oldState;
+        public async Task<bool> Join()
+        {
+            lock(syncRoot)
+            {
+                if (joinTask == null)
+                {
+                    oldState = state;
+                    state = ChannelState.Joining;
+                    joinTask = client.Self.JoinGroupChatAsync(group.ID);
+                }
+            }
+
+            var result = await joinTask;
+            lock(syncRoot)
+            {
+                state = result ? ChannelState.Connected : ChannelState.Failed;
+                if(!result && oldState == ChannelState.Unconnected)
+                {
+                    SendMessageDownstream(IntermediateMessage.ClientNotice(mapper.Client, "Could not join group " + SlName));
+                }
+            }
+            return result;
+        }
+
         private bool JoinGroupchat()
         {
-            var waiter = new System.Threading.AutoResetEvent(false);
-            bool success = false;
-
-            EventHandler<GroupChatJoinedEventArgs> handler;
-            handler = delegate(object o, GroupChatJoinedEventArgs e)
-            {
-                if(e.SessionID == group.ID)
-                {
-                    success = e.Success;
-                    waiter.Set();
-                }
-            };
-            client.Self.GroupChatJoined += handler;
-            client.Self.RequestJoinGroupChat(group.ID);
-            waiter.WaitOne(10000);
-            client.Self.GroupChatJoined -= handler;
-            return success;
+            var task = Join();
+            return task.Wait(5000) && task.Result;
         }
     }
 }

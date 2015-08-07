@@ -315,9 +315,12 @@ namespace HeadlessSlClient.Irc
             {
                 if (!this.channels.ContainsKey(i.IrcName))
                 {
-                    RegisterChannelHandlers(i);
-                    this.channels[i.IrcName] = i;
-                    Send(ChannelJoinMessages(i));
+                    i.Join().ContinueWith(t =>
+                    {
+                        RegisterChannelHandlers(i);
+                        this.channels[i.IrcName] = i;
+                        Send(ChannelJoinMessages(i));
+                    });
                 }
             }
         }

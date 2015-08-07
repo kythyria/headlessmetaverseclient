@@ -82,6 +82,14 @@ namespace HeadlessSlClient
         public bool IsOperator;
     }
 
+    enum ChannelState
+    {
+        Unconnected,
+        Joining,
+        Connected,
+        Failed
+    }
+
     interface IChannel
     {
         string SlName { get; }
@@ -92,6 +100,9 @@ namespace HeadlessSlClient
         event ChannelMemberChangeHandler MembersChanged;
         void SendMessage(IntermediateMessage msg);
         event ReceiveMessageHandler ReceiveMessage;
+
+        ChannelState State { get; }
+        Task<bool> Join();
     }
 
     interface IIdentityMapper
