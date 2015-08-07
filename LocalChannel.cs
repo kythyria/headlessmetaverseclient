@@ -14,9 +14,13 @@ namespace HeadlessSlClient
         const float TALKDISTANCE = 20.0f;
         const float SHOUTDISTANCE = 100.0f;
 
+        private object syncRoot = new object();
+        private TaskCompletionSource<bool> joinTask = new TaskCompletionSource<bool>();
+
         private OpenMetaverse.GridClient client;
         private IIdentityMapper mapper;
         private int chatChannel = 0;
+        private ChannelState state = ChannelState.Unconnected;
 
         private Dictionary<string, Dictionary<UUID, ChannelMembership>> nearby;
 
@@ -144,12 +148,42 @@ namespace HeadlessSlClient
                 }
             }
 
-            if (!evt.HasChanges) { return;  }
+            if (!evt.HasChanges) { return; }
+
+            lock (syncRoot)
+            {
+                if (state != ChannelState.Connected)
+                {
+                    state = ChannelState.Connected;
+                    joinTask.SetResult(true);
+                }
+            }
 
             if(this.MembersChanged != null)
             {
                 MembersChanged(this, evt);
             }
+        }
+
+        public ChannelState State
+        {
+            get
+            {
+                lock(syncRoot)
+                {
+                    return state;
+                }
+            }
+        }
+
+        public Task<bool> Join()
+        {
+            lock(syncRoot)
+            {
+                if(state != ChannelState.Connected)
+                state = ChannelState.Joining;
+            }
+            return joinTask.Task;
         }
 
         private PositionCategory CategorisePosition(UUID i, CoarseLocationUpdateEventArgs e)

@@ -97,7 +97,6 @@ namespace HeadlessSlClient
                 client.Self.IM += OnIM;
 
                 client.Groups.CurrentGroups += OnGroupListLoaded;
-                client.Groups.RequestCurrentGroups();
             }
 
             return success;
