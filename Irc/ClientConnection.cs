@@ -111,7 +111,7 @@ namespace HeadlessSlClient.Irc
                 case "PART":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "PART", "Not enough parameters");
+                        SendNeedMoreParams("PART");
                         break;
                     }
                     SendFromClient("JOIN", msg.Argv[0]);
@@ -123,7 +123,7 @@ namespace HeadlessSlClient.Irc
                     OnWho(msg);
                     break;
                 case "NAMES":
-                    if (msg.Argv.Count < 1) { SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "NAMES", "Not enough parameters"); break; }
+                    if (msg.Argv.Count < 1) { SendNeedMoreParams("NAMES"); break; }
                     OnNames(msg.Argv[0]);
                     break;
                 case "MODE":
@@ -132,7 +132,7 @@ namespace HeadlessSlClient.Irc
                 case "TOPIC":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "TOPIC", "Not enough parameters");
+                        SendNeedMoreParams("TOPIC");
                         break;
                     }
                     if (msg.Argv.Count > 1)
@@ -145,14 +145,14 @@ namespace HeadlessSlClient.Irc
                 case "USERHOST":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "USERHOST", "Not enough parameters");
+                        SendNeedMoreParams("USERHOST");
                         break;
                     }
                     var id = mapper.MapUser(msg.Argv[0]);
                     SendFromServer(Numeric.RPL_USERHOST, username, String.Format("{0}=+{1}@{2}", id.IrcNick, id.IrcIdent, id.IrcDomain));
                     break;
                 default:
-                    SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, msg.Command, "Not implemented!");
+                    SendFromServer(Numeric.ERR_UNKNOWNCOMMAND, username, msg.Command, "Not implemented!");
                     break;
             }
         }
@@ -161,7 +161,7 @@ namespace HeadlessSlClient.Irc
         {
             if (msg.Argv.Count < 2)
             {
-                SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "PRIVMSG", "Not enough parameters");
+                SendNeedMoreParams("PRIVMSG");
                 return;
             }
 
@@ -194,7 +194,7 @@ namespace HeadlessSlClient.Irc
 
         private void OnMode(Message msg)
         {
-            if (msg.Argv.Count < 1) { SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "MODE", "Not enough parameters"); return; }
+            if (msg.Argv.Count < 1) { SendNeedMoreParams("MODE"); return; }
             if (!channels.ContainsKey(msg.Argv[0]))
             {
                 SendFromServer(Numeric.ERR_USERSDONTMATCH, "Don't touch their modes!");
@@ -251,7 +251,7 @@ namespace HeadlessSlClient.Irc
 
         private void OnWho(Message msg)
         {
-            if (msg.Argv.Count < 1) { SendFromServer(Numeric.ERR_NEEDMOREPARAMS, "WHO", "Not enough parameters"); return; }
+            if (msg.Argv.Count < 1) { SendNeedMoreParams("WHO"); return; }
 
             var key = msg.Argv[0];
             if (channels.ContainsKey(key))
@@ -505,5 +505,20 @@ namespace HeadlessSlClient.Irc
         {
             Send(new Message(selfId.IrcFullId, command, argv));
         }
+
+        public void SendNumeric(Numeric numeric, params string[] argv)
+        {
+            var args = new List<string>();
+            args.Add(username);
+            args.AddRange(argv);
+            SendFromServer(numeric, args.ToArray());
+        }
+
+        public void SendNeedMoreParams(string command)
+        {
+            SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, command, "Not enough parameters");
+        }
+
+        public string ClientNick { get { return username; } }
     }
 }
