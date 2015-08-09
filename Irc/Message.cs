@@ -29,7 +29,7 @@ namespace HeadlessSlClient.Irc
             Argv.AddRange(argv);
         }
 
-        public Message(string sender, Numeric command, params string[] argv) : this(sender, command.ToString("000"), argv)
+        public Message(string sender, Numeric command, params string[] argv) : this(sender, ((int)command).ToString("000"), argv)
         {
 
         }
