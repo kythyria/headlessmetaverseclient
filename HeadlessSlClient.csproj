@@ -87,7 +87,6 @@
     <Compile Include="Irc\ClientConnection.cs" />
     <Compile Include="Irc\Message.cs" />
     <Compile Include="Irc\Rfc1459Parser.cs" />
-    <Compile Include="Connection.cs" />
     <Compile Include="LocalChannel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
