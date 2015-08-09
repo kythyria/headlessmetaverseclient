@@ -22,6 +22,7 @@ namespace HeadlessSlClient
                 //var us = new UpstreamConnection("http://localhost:9000", "localhost");
                 var us = new UpstreamConnection("https://login.agni.lindenlab.com/cgi-bin/login.cgi", "agni.lindenlab.com");
                 var ds = new Irc.ClientConnection(connection, us, us.Mapper);
+                var friendlist = new FriendsList(us, ds);
                 ds.Run();
                 /*var server = new Server(connection);
                 server.Run();*/

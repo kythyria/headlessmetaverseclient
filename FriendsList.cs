@@ -14,16 +14,19 @@ namespace HeadlessSlClient
         private object syncRoot = new object();
 
         private GridClient client;
-        private Irc.IMessageSink downstream;
+
+        private Irc.IRawMessageSink downstream;
         private IIdentityMapper mapper;
 
-        public FriendsList(GridClient client, IIdentityMapper mapper, Irc.IMessageSink downstream)
+        public FriendsList(IUpstreamConnection connection, Irc.IRawMessageConnection downstream)
         {
             this.downstream = downstream;
-            this.client = client;
-            this.mapper = mapper;
+            this.client = connection.Client;
+            this.mapper = connection.Mapper;
             client.Friends.FriendOnline += GridClient_FriendPresenceChanged;
             client.Friends.FriendOffline += GridClient_FriendPresenceChanged;
+
+            downstream.Register(this);
         }
 
         private void GridClient_FriendPresenceChanged(object sender, OpenMetaverse.FriendInfoEventArgs e)

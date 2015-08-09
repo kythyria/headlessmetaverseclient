@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HeadlessSlClient.Irc
 {
-    class ClientConnection : IMessageSink
+    class ClientConnection : IRawMessageConnection
     {
         enum ConnectionState
         {
@@ -34,6 +34,11 @@ namespace HeadlessSlClient.Irc
         string password = null;
         bool userMsgSent;
 
+        delegate void RawMessageHandler(Message msg);
+
+        HashSet<IRawMessageHandler> handlers;
+        Dictionary<string, RawMessageHandler> handlerCallbacks;
+
         MappedIdentity selfId;
         Dictionary<string, IChannel> channels;
 
@@ -43,9 +48,42 @@ namespace HeadlessSlClient.Irc
             this.upstream = upstream;
             this.mapper = mapper;
             this.channels = new Dictionary<string, IChannel>();
+            this.handlers = new HashSet<IRawMessageHandler>();
+            handlerCallbacks = new Dictionary<string, RawMessageHandler>();
 
             upstream.ReceiveMessage += ReceiveUpstreamMessage;
             upstream.ChannelListLoaded += ChannelListLoaded;
+        }
+
+        public void Register(IRawMessageHandler handler)
+        {
+            lock(handlers)
+            {
+                handlers.Add(handler);
+                foreach(var i in handler.SupportedMessages)
+                {
+                    if(!handlerCallbacks.ContainsKey(i))
+                    {
+                        handlerCallbacks.Add(i, null);
+                    }
+                    handlerCallbacks[i] += handler.HandleMessage;
+                }
+            }
+        }
+
+        public void Unregister(IRawMessageHandler handler)
+        {
+            lock(handlers)
+            {
+                handlers.Remove(handler);
+                foreach(var i in handler.SupportedMessages)
+                {
+                    if(handlerCallbacks.ContainsKey(i))
+                    {
+                        handlerCallbacks[i] -= handler.HandleMessage;
+                    }
+                }
+            }
         }
 
         public void Run()
@@ -84,12 +122,21 @@ namespace HeadlessSlClient.Irc
 
         private void DispatchMessage(Message msg)
         {
+
             switch (state)
             {
                 case ConnectionState.REGISTRATION:
                     OnRegistrationMessage(msg);
                     break;
                 case ConnectionState.CONNECTED:
+                    lock (handlers)
+                    {
+                        if(handlerCallbacks.ContainsKey(msg.Command))
+                        {
+                            handlerCallbacks[msg.Command](msg);
+                            break;
+                        }
+                    }
                     OnConnectedMessage(msg);
                     break;
             }
