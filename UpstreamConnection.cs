@@ -95,11 +95,31 @@ namespace HeadlessSlClient
             {
                 localChannel = new LocalChannel(client, mapper);
                 client.Self.IM += OnIM;
+                client.Self.ChatSessionMemberAdded += OnChatSessionMemberAdded;
+                client.Self.ChatSessionMemberLeft += OnChatSessionMemeberLeft;
 
                 client.Groups.CurrentGroups += OnGroupListLoaded;
             }
 
             return success;
+        }
+
+        private void OnChatSessionMemeberLeft(object sender, ChatSessionMemberLeftEventArgs e)
+        {
+            GroupChannel chan;
+            if(channels.TryGetValue(e.SessionID, out chan))
+            {
+                chan.OnMemberLeft(e.AgentID);
+            }
+        }
+
+        private void OnChatSessionMemberAdded(object sender, ChatSessionMemberAddedEventArgs e)
+        {
+            GroupChannel chan;
+            if (channels.TryGetValue(e.SessionID, out chan))
+            {
+                chan.OnMemberJoined(e.AgentID);
+            }
         }
 
         private void OnGroupListLoaded(object sender, CurrentGroupsEventArgs e)
