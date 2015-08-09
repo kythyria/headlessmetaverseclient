@@ -493,7 +493,7 @@ namespace HeadlessSlClient.Irc
 
         public void SendFromServer(Numeric numeric, params string[] argv)
         {
-            SendFromServer(numeric.ToString("000"), argv);
+            Send(new Message(LOCALHOST, numeric, argv));
         }
 
         public void SendFromServer(string command, params string[] argv)
