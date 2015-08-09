@@ -21,11 +21,6 @@ namespace HeadlessSlClient.Irc
         const string GROUPHOST = "group.grid.sl";
         const string LOCALNICK = "~SYSTEM~!client@local.sl";
 
-        const int RPL_TOPIC = 332;
-        const int RPL_CHANCREATED = 333;
-        const int RPL_CHANNELMODEIS = 324;
-        const int RPL_USERHOST = 302;
-
         Socket connection;
         StreamWriter writer;
         StreamReader reader;
@@ -116,7 +111,7 @@ namespace HeadlessSlClient.Irc
                 case "PART":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(461, username, "PART", "Not enough parameters");
+                        SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "PART", "Not enough parameters");
                         break;
                     }
                     SendFromClient("JOIN", msg.Argv[0]);
@@ -128,7 +123,7 @@ namespace HeadlessSlClient.Irc
                     OnWho(msg);
                     break;
                 case "NAMES":
-                    if (msg.Argv.Count < 1) { SendFromServer(461, username, "NAMES", "Not enough parameters"); break; }
+                    if (msg.Argv.Count < 1) { SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "NAMES", "Not enough parameters"); break; }
                     OnNames(msg.Argv[0]);
                     break;
                 case "MODE":
@@ -137,12 +132,12 @@ namespace HeadlessSlClient.Irc
                 case "TOPIC":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(461, username, "TOPIC", "Not enough parameters");
+                        SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "TOPIC", "Not enough parameters");
                         break;
                     }
                     if (msg.Argv.Count > 1)
                     {
-                        SendFromServer(482, "You can't set topics");
+                        SendFromServer(Numeric.ERR_CHANOPRIVSNEEDED, "You can't set topics");
                         break;
                     }
                     OnTopic(msg);
@@ -150,14 +145,14 @@ namespace HeadlessSlClient.Irc
                 case "USERHOST":
                     if (msg.Argv.Count < 1)
                     {
-                        SendFromServer(461, username, "USERHOST", "Not enough parameters");
+                        SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "USERHOST", "Not enough parameters");
                         break;
                     }
                     var id = mapper.MapUser(msg.Argv[0]);
-                    SendFromServer(RPL_USERHOST, username, String.Format("{0}=+{1}@{2}", id.IrcNick, id.IrcIdent, id.IrcDomain));
+                    SendFromServer(Numeric.RPL_USERHOST, username, String.Format("{0}=+{1}@{2}", id.IrcNick, id.IrcIdent, id.IrcDomain));
                     break;
                 default:
-                    SendFromServer("421", username, msg.Command, "Not implemented!");
+                    SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, msg.Command, "Not implemented!");
                     break;
             }
         }
@@ -166,7 +161,7 @@ namespace HeadlessSlClient.Irc
         {
             if (msg.Argv.Count < 2)
             {
-                SendFromServer(461, username, "PRIVMSG", "Not enough parameters");
+                SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "PRIVMSG", "Not enough parameters");
                 return;
             }
 
@@ -194,30 +189,30 @@ namespace HeadlessSlClient.Irc
 
         private void OnTopic(Message msg)
         {
-            SendFromServer(RPL_TOPIC, msg.Argv[0], channels[msg.Argv[0]].Topic);
+            SendFromServer(Numeric.RPL_TOPIC, msg.Argv[0], channels[msg.Argv[0]].Topic);
         }
 
         private void OnMode(Message msg)
         {
-            if (msg.Argv.Count < 1) { SendFromServer(461, username, "MODE", "Not enough parameters"); return; }
+            if (msg.Argv.Count < 1) { SendFromServer(Numeric.ERR_NEEDMOREPARAMS, username, "MODE", "Not enough parameters"); return; }
             if (!channels.ContainsKey(msg.Argv[0]))
             {
-                SendFromServer(502, "Don't touch their modes!");
+                SendFromServer(Numeric.ERR_USERSDONTMATCH, "Don't touch their modes!");
                 return;
             }
             if (msg.Argv.Count > 1) {
                 if (msg.Argv[1] == "+b")
                 {
-                    SendFromServer(368, username, msg.Argv[0], "End of ban list");
+                    SendFromServer(Numeric.RPL_ENDOFBANLIST, username, msg.Argv[0], "End of ban list");
                 }
                 else
                 {
-                    SendFromServer(482, msg.Argv[0], username, "Chanop functions are not supported");
+                    SendFromServer(Numeric.ERR_CHANOPRIVSNEEDED, msg.Argv[0], username, "Chanop functions are not supported");
                 }
                 return;
             }
 
-            SendFromServer(RPL_CHANNELMODEIS, username, msg.Argv[0], "+t");
+            SendFromServer(Numeric.RPL_CHANNELMODEIS, username, msg.Argv[0], "+t");
         }
 
         private IEnumerable<Message> NamesReply(string chan)
@@ -243,10 +238,10 @@ namespace HeadlessSlClient.Irc
                             reply.Add(j.Subject.IrcNick);
                         }
                     }
-                    yield return new Message(LOCALHOST, 353, username, "=", chan, String.Join(" ", reply));
+                    yield return new Message(LOCALHOST, Numeric.RPL_NAMREPLY, username, "=", chan, String.Join(" ", reply));
                 }
             }
-            yield return new Message(LOCALHOST, 366, username, chan, "End of NAMES list");
+            yield return new Message(LOCALHOST, Numeric.RPL_ENDOFNAMES, username, chan, "End of NAMES list");
         }
 
         private void OnNames(string chan)
@@ -256,7 +251,7 @@ namespace HeadlessSlClient.Irc
 
         private void OnWho(Message msg)
         {
-            if (msg.Argv.Count < 1) { SendFromServer(461, "WHO", "Not enough parameters"); return; }
+            if (msg.Argv.Count < 1) { SendFromServer(Numeric.ERR_NEEDMOREPARAMS, "WHO", "Not enough parameters"); return; }
 
             var key = msg.Argv[0];
             if (channels.ContainsKey(key))
@@ -269,10 +264,10 @@ namespace HeadlessSlClient.Irc
                     if (i.IsOperator) { reply.Add("H@"); }
                     else if (i.Position <= PositionCategory.Talk) { reply.Add("H+");}
                     else { reply.Add("H"); }
-                    SendFromServer(352, reply.ToArray());
+                    SendFromServer(Numeric.RPL_WHOREPLY, reply.ToArray());
                 }
             }
-            SendFromServer(315);
+            SendFromServer(Numeric.RPL_ENDOFWHO);
         }
 
         private void OnRegistrationMessage(Message msg)
@@ -301,9 +296,9 @@ namespace HeadlessSlClient.Irc
                 if (upstream.Connect(firstname, lastname, password))
                 {
                     selfId = mapper.Client;
-                    SendFromServer(1, username, string.Format("Welcome to the Headless SL Client {0}", selfId.IrcFullId));
-                    SendFromServer(2, username, "Your host is sl.local, running HeadlessSlClient 0.1");
-                    SendFromServer(5, username, "NICKLEN=63 MODES=,,,t PREFIX=(ov)@+");
+                    SendFromServer(Numeric.RPL_WELCOME, username, string.Format("Welcome to the Headless SL Client {0}", selfId.IrcFullId));
+                    SendFromServer(Numeric.RPL_YOURHOSTIS, username, "Your host is sl.local, running HeadlessSlClient 0.1");
+                    SendFromServer(Numeric.RPL_ISUPPORT, username, "NICKLEN=63 MODES=,,,t PREFIX=(ov)@+");
                     state = ConnectionState.CONNECTED;
                 }
             }
@@ -328,8 +323,8 @@ namespace HeadlessSlClient.Irc
         private IEnumerable<Message> ChannelJoinMessages(IChannel channel)
         {
             yield return new Message(selfId.IrcFullId, "JOIN", channel.IrcName);
-            yield return new Message(LOCALHOST, RPL_TOPIC, username, channel.IrcName, channel.Topic);
-            yield return new Message(LOCALHOST, RPL_CHANCREATED, username, channel.IrcName, mapper.Grid.IrcDomain, "0");
+            yield return new Message(LOCALHOST, Numeric.RPL_TOPIC, username, channel.IrcName, channel.Topic);
+            yield return new Message(LOCALHOST, Numeric.RPL_CHANCREATED, username, channel.IrcName, mapper.Grid.IrcDomain, "0");
             foreach (var i in NamesReply(channel.IrcName)) { yield return i; }
         }
 
@@ -451,7 +446,7 @@ namespace HeadlessSlClient.Irc
             }
             else if(msg.Type == MessageType.AwayMessage)
             {
-                Send(msg.Sender.IrcFullId, 301, username, msg.Sender.IrcNick, msg.Payload);
+                Send(msg.Sender.IrcFullId, Numeric.RPL_AWAY, username, msg.Sender.IrcNick, msg.Payload);
             }
             else if(msg.Type == MessageType.IM)
             {
@@ -464,7 +459,7 @@ namespace HeadlessSlClient.Irc
             }
         }
 
-        private void Send(IEnumerable<Message> messages)
+        public void Send(IEnumerable<Message> messages)
         {
             lock(connection)
             {
@@ -476,7 +471,7 @@ namespace HeadlessSlClient.Irc
             }
         }
 
-        private void Send(Message message)
+        public void Send(Message message)
         {
             var data = parser.Emit(message);
             lock (connection)
@@ -486,27 +481,27 @@ namespace HeadlessSlClient.Irc
             }
         }
 
-        private void Send(string sender, string command, params string[] argv)
+        public void Send(string sender, string command, params string[] argv)
         {
             Send(new Message(sender, command, argv));
         }
 
-        private void Send(string sender, int numeric, params string[] argv)
+        public void Send(string sender, Numeric numeric, params string[] argv)
         {
             Send(new Message(sender, numeric, argv));
         }
 
-        private void SendFromServer(int numeric, params string[] argv)
+        public void SendFromServer(Numeric numeric, params string[] argv)
         {
             SendFromServer(numeric.ToString("000"), argv);
         }
 
-        private void SendFromServer(string command, params string[] argv)
+        public void SendFromServer(string command, params string[] argv)
         {
             Send(new Message(LOCALHOST, command, argv));
         }
 
-        private void SendFromClient(string command, params string[] argv)
+        public void SendFromClient(string command, params string[] argv)
         {
             Send(new Message(selfId.IrcFullId, command, argv));
         }
