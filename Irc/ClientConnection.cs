@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HeadlessSlClient.Irc
 {
-    class ClientConnection
+    class ClientConnection : IMessageSink
     {
         enum ConnectionState
         {
