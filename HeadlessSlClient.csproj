@@ -76,6 +76,7 @@
     <Compile Include="AsyncWrappers.cs" />
     <Compile Include="CacheDictionary.cs" />
     <Compile Include="DataTypes.cs" />
+    <Compile Include="FriendsList.cs" />
     <Compile Include="GroupChannel.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="IdentityMappers\IdentityMapperSync.cs">

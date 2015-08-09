@@ -28,6 +28,12 @@ namespace HeadlessSlClient.Irc
         ERR_CHANOPRIVSNEEDED = 482,
 
         ERR_USERSDONTMATCH   = 502,
+
+        RPL_MONONLINE        = 730,
+        RPL_MONOFFLINE       = 731,
+        RPL_MONLIST          = 732,
+        RPL_ENDOFMONLIST     = 733,
+        RPL_MONLISTFULL      = 734,
     }
 
 }
