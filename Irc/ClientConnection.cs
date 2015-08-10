@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace HeadlessSlClient.Irc
 {
-    class ClientConnection : IMessageSink
+    class ClientConnection : IRawMessageConnection
     {
         enum ConnectionState
         {
@@ -20,6 +20,12 @@ namespace HeadlessSlClient.Irc
         const string LOCALHOST = "local.sl";
         const string GROUPHOST = "group.grid.sl";
         const string LOCALNICK = "~SYSTEM~!client@local.sl";
+
+        static readonly string[] supportTokens = new string[] {
+            "NICKLEN=63",
+            "MODES=,,,t",
+            "PREFIX=(ov)@+"
+        };
 
         Socket connection;
         StreamWriter writer;
@@ -34,6 +40,11 @@ namespace HeadlessSlClient.Irc
         string password = null;
         bool userMsgSent;
 
+        delegate void RawMessageHandler(Message msg);
+
+        HashSet<IRawMessageHandler> handlers;
+        Dictionary<string, RawMessageHandler> handlerCallbacks;
+
         MappedIdentity selfId;
         Dictionary<string, IChannel> channels;
 
@@ -43,9 +54,42 @@ namespace HeadlessSlClient.Irc
             this.upstream = upstream;
             this.mapper = mapper;
             this.channels = new Dictionary<string, IChannel>();
+            this.handlers = new HashSet<IRawMessageHandler>();
+            handlerCallbacks = new Dictionary<string, RawMessageHandler>();
 
             upstream.ReceiveMessage += ReceiveUpstreamMessage;
             upstream.ChannelListLoaded += ChannelListLoaded;
+        }
+
+        public void Register(IRawMessageHandler handler)
+        {
+            lock(handlers)
+            {
+                handlers.Add(handler);
+                foreach(var i in handler.SupportedMessages)
+                {
+                    if(!handlerCallbacks.ContainsKey(i))
+                    {
+                        handlerCallbacks.Add(i, null);
+                    }
+                    handlerCallbacks[i] += handler.HandleMessage;
+                }
+            }
+        }
+
+        public void Unregister(IRawMessageHandler handler)
+        {
+            lock(handlers)
+            {
+                handlers.Remove(handler);
+                foreach(var i in handler.SupportedMessages)
+                {
+                    if(handlerCallbacks.ContainsKey(i))
+                    {
+                        handlerCallbacks[i] -= handler.HandleMessage;
+                    }
+                }
+            }
         }
 
         public void Run()
@@ -84,12 +128,21 @@ namespace HeadlessSlClient.Irc
 
         private void DispatchMessage(Message msg)
         {
+
             switch (state)
             {
                 case ConnectionState.REGISTRATION:
                     OnRegistrationMessage(msg);
                     break;
                 case ConnectionState.CONNECTED:
+                    lock (handlers)
+                    {
+                        if(handlerCallbacks.ContainsKey(msg.Command))
+                        {
+                            handlerCallbacks[msg.Command](msg);
+                            break;
+                        }
+                    }
                     OnConnectedMessage(msg);
                     break;
             }
@@ -297,8 +350,15 @@ namespace HeadlessSlClient.Irc
                 {
                     selfId = mapper.Client;
                     SendFromServer(Numeric.RPL_WELCOME, username, string.Format("Welcome to the Headless SL Client {0}", selfId.IrcFullId));
-                    SendFromServer(Numeric.RPL_YOURHOSTIS, username, "Your host is sl.local, running HeadlessSlClient 0.1");
-                    SendFromServer(Numeric.RPL_ISUPPORT, username, "NICKLEN=63 MODES=,,,t PREFIX=(ov)@+");
+                    SendFromServer(Numeric.RPL_YOURHOST, username, "Your host is sl.local, running HeadlessSlClient 0.1");
+
+                    var tokens = new List<string>(supportTokens);
+                    foreach(var i in handlers)
+                    {
+                        tokens.AddRange(i.SupportTokens);
+                    }
+
+                    SendFromServer(Numeric.RPL_ISUPPORT, username, String.Join(" ", tokens));
                     state = ConnectionState.CONNECTED;
                 }
             }
@@ -520,5 +580,6 @@ namespace HeadlessSlClient.Irc
         }
 
         public string ClientNick { get { return username; } }
+        public string ServerName { get { return LOCALHOST; } }
     }
 }

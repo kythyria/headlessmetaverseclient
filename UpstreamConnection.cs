@@ -138,6 +138,8 @@ namespace HeadlessSlClient
             client.Network.Logout();
         }
 
+        public GridClient Client { get { return client; } }
+
         private void OnIM(object o, InstantMessageEventArgs e)
         {
             switch (e.IM.Dialog)

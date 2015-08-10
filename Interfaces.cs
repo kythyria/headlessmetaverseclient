@@ -142,6 +142,9 @@ namespace HeadlessSlClient
 
         event ChannelListLoadedHandler ChannelListLoaded;
         event FriendsListLoadedHandler FriendsListLoaded;
+
+        GridClient Client { get; }
+        IIdentityMapper Mapper { get; }
     }
 
     interface IUpstreamChannel

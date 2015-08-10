@@ -5,7 +5,7 @@ using System.Text;
 
 namespace HeadlessSlClient.Irc
 {
-    interface IMessageSink
+    interface IRawMessageSink
     {
         void Send(Message msg);
         void Send(IEnumerable<Message> messages);
@@ -21,6 +21,13 @@ namespace HeadlessSlClient.Irc
         void SendNeedMoreParams(string command);
 
         string ClientNick { get; }
+        string ServerName { get; }
+    }
+
+    interface IRawMessageProvider
+    {
+        void Register(IRawMessageHandler handler);
+        void Unregister(IRawMessageHandler handler);
     }
 
     interface IRawMessageHandler
@@ -30,5 +37,9 @@ namespace HeadlessSlClient.Irc
         IEnumerable<string> Caps { get; }
 
         void HandleMessage(Message msg);
+    }
+
+    interface IRawMessageConnection : IRawMessageSink, IRawMessageProvider
+    {
     }
 }

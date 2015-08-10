@@ -58,5 +58,10 @@ namespace HeadlessSlClient
         {
             return String.Format(format, args);
         }
+
+        public static IEnumerable<T> AppendSingle<T>(this IEnumerable<T> self, T item)
+        {
+            return self.Concat(Enumerable.Repeat(item, 1));
+        }
     }
 }
