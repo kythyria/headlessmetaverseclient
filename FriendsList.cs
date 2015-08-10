@@ -55,6 +55,36 @@ namespace HeadlessSlClient
             {
                 downstream.SendNeedMoreParams("MONITOR");
             }
+
+            switch(msg.Argv[0].ToUpperInvariant())
+            {
+                case "+":
+                case "-":
+                case "C":
+                    downstream.SendNumeric(Numeric.ERR_UNKNOWNSUBCOMMAND, "MONITOR", msg.Argv[0], "Use FriendServ for that");
+                    break;
+                case "L":
+                    var idlist = new List<MappedIdentity>();
+                    client.Friends.FriendList.ForEach(i => idlist.Add(mapper.MapUser(i.Key, i.Value.Name)));
+                    downstream.Send(idlist.ChunkTrivialBetter(512 / 63).Select(i =>
+                    {
+                        var m = new Irc.Message(downstream.ServerName, Numeric.RPL_MONLIST, downstream.ClientNick);
+                        m.Argv.Add(String.Join(",", i.Select(j=>j.IrcNick)));
+                        return m;
+                    }).AppendSingle(new Irc.Message(downstream.ServerName, Numeric.RPL_ENDOFMONLIST, "End of monitor list")));
+                    break;
+                case "S":
+                    var msglist = new List<Irc.Message>();
+                    client.Friends.FriendList.ForEach(i =>
+                    {
+                        var id = mapper.MapUser(i.Key, i.Value.Name);
+                        var num = i.Value.IsOnline ? Numeric.RPL_MONONLINE : Numeric.RPL_MONOFFLINE;
+                        var response = new Irc.Message(downstream.ServerName, num, "*", id.IrcNick);
+                        msglist.Add(response);
+                    });
+                    downstream.Send(msglist);
+                    break;
+            }
         }
 
         #endregion

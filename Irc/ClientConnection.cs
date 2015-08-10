@@ -21,6 +21,12 @@ namespace HeadlessSlClient.Irc
         const string GROUPHOST = "group.grid.sl";
         const string LOCALNICK = "~SYSTEM~!client@local.sl";
 
+        static readonly string[] supportTokens = new string[] {
+            "NICKLEN=63",
+            "MODES=,,,t",
+            "PREFIX=(ov)@+"
+        };
+
         Socket connection;
         StreamWriter writer;
         StreamReader reader;
@@ -344,8 +350,15 @@ namespace HeadlessSlClient.Irc
                 {
                     selfId = mapper.Client;
                     SendFromServer(Numeric.RPL_WELCOME, username, string.Format("Welcome to the Headless SL Client {0}", selfId.IrcFullId));
-                    SendFromServer(Numeric.RPL_YOURHOSTIS, username, "Your host is sl.local, running HeadlessSlClient 0.1");
-                    SendFromServer(Numeric.RPL_ISUPPORT, username, "NICKLEN=63 MODES=,,,t PREFIX=(ov)@+");
+                    SendFromServer(Numeric.RPL_YOURHOST, username, "Your host is sl.local, running HeadlessSlClient 0.1");
+
+                    var tokens = new List<string>(supportTokens);
+                    foreach(var i in handlers)
+                    {
+                        tokens.AddRange(i.SupportTokens);
+                    }
+
+                    SendFromServer(Numeric.RPL_ISUPPORT, username, String.Join(" ", tokens));
                     state = ConnectionState.CONNECTED;
                 }
             }
@@ -567,5 +580,6 @@ namespace HeadlessSlClient.Irc
         }
 
         public string ClientNick { get { return username; } }
+        public string ServerName { get { return LOCALHOST; } }
     }
 }

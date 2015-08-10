@@ -21,6 +21,7 @@ namespace HeadlessSlClient.Irc
         void SendNeedMoreParams(string command);
 
         string ClientNick { get; }
+        string ServerName { get; }
     }
 
     interface IRawMessageProvider
