@@ -10,16 +10,27 @@ Log in using your SL name thusly as your nick, and your SL password as the serve
 that error handling is sub-par so errors might not be sent to your client (this includes the one
 where you tried to log in too soon after logging out or crashing).
 
-Supported:
+## Supported:
 
  * Logging in
  * Talking and listening in local chat
- * Listening in group chat
- * Maybe talking in group chat
- * Radar enough to see who's in the same region as you.
+ * Group chat
+   * People with moderator permissions are listed as chanops.
+   * You can't leave or detach a groupchat.
+ * See who's in the same region as you.
+   * People in regular chat range are voiced.
  * IMs
+ * Friend presence, using [`MONITOR`](http://ircv3.net/specs/core/monitor-3.2.html) to report/
+   display it.
+   * You can't add or remove people, only see their presence.
+ * In theory (this is untested), RLV `@sit` and `@redirchat`
 
-Everything else probably won't work.
+## Things that definitely don't work
+ * Getting a correct list of who's in a groupchat with you (regular clients can't do this either)
+ * Closing groupchats (you'll be forcibly rejoined)
+ * Adding or removing friends
+ * Joining or leaving groups
+ * Pretty much everything else.
 
 ## Building
 You'll probably need to correct the references to Libopenmetaverse, and you'll need to supply an
