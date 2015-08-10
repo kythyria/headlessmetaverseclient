@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenMetaverse;
 
-namespace HeadlessSlClient
+namespace HeadlessMetaverseClient
 {
     static class Helpers
     {

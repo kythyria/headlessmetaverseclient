@@ -7,8 +7,8 @@
     <ProjectGuid>{3925C210-FD74-4A49-B15D-84491F7748A0}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HeadlessSlClient</RootNamespace>
-    <AssemblyName>HeadlessSlClient</AssemblyName>
+    <RootNamespace>HeadlessMetaverseClient</RootNamespace>
+    <AssemblyName>HeadlessMetaverseClient</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

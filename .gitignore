@@ -1,7 +1,5 @@
-*.csproj
 *.user
 *.userprefs
-*.sln
 *.suo
 *.cache
 

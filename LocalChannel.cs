@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Regex = System.Text.RegularExpressions.Regex;
 using OpenMetaverse;
 
-namespace HeadlessSlClient
+namespace HeadlessMetaverseClient
 {
     class LocalChannel : IChannel, IUpstreamChannel
     {

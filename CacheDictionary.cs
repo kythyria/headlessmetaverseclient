@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeadlessSlClient
+namespace HeadlessMetaverseClient
 {
 
     class CacheDictionary<TKey, TValue> : IDictionary<TKey, TValue>

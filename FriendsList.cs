@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GridClient = OpenMetaverse.GridClient;
-using Numeric = HeadlessSlClient.Irc.Numeric;
+using Numeric = HeadlessMetaverseClient.Irc.Numeric;
 
-namespace HeadlessSlClient
+namespace HeadlessMetaverseClient
 {
     class FriendsList : Irc.IRawMessageHandler
     {

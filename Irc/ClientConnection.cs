@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeadlessSlClient.Irc
+namespace HeadlessMetaverseClient.Irc
 {
     class ClientConnection : IRawMessageConnection
     {

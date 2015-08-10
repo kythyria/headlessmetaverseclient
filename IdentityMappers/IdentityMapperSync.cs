@@ -6,7 +6,7 @@ using Regex = System.Text.RegularExpressions.Regex;
 using System.Threading.Tasks;
 using OpenMetaverse;
 
-namespace HeadlessSlClient
+namespace HeadlessMetaverseClient
 {
     class IdentityMapper : IIdentityMapper
     {

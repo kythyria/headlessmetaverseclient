@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using OpenMetaverse;
 
-namespace HeadlessSlClient
+namespace HeadlessMetaverseClient
 {
     class Program
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace HeadlessSlClient.Irc
+namespace HeadlessMetaverseClient.Irc
 {
     interface IRawMessageSink
     {
