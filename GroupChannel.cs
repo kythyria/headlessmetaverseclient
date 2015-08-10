@@ -141,6 +141,35 @@ namespace HeadlessSlClient
             }
         }
 
+        public void OnMemberJoined(UUID AgentId)
+        {
+            if (AgentId == client.Self.AgentID) return;
+            var changes = new ChannelMemberChangeEventArgs();
+            var newmember = new ChannelMemberChangeEventArgs.ChangeDetails();
+            newmember.Subject = mapper.MapUser(AgentId);
+            client.Self.GroupChatSessions.Lock(d =>
+            {
+                var cachedMembership = d[group.ID].FirstOrDefault(i => i.AvatarKey == AgentId);
+                if (cachedMembership.AvatarKey == AgentId)
+                {
+                    newmember.IsOperator = cachedMembership.IsModerator;
+                }
+            });
+            changes.NewMembers.Add(newmember);
+
+            if (MembersChanged != null) { MembersChanged(this, changes); }
+        }
+
+        public void OnMemberLeft(UUID AgentId)
+        {
+            if (AgentId == client.Self.AgentID) return;
+            var changes = new ChannelMemberChangeEventArgs();
+            var oldmember = new ChannelMemberChangeEventArgs.ChangeDetails();
+            oldmember.Subject = mapper.MapUser(AgentId);
+            changes.RemovedMembers.Add(oldmember);
+            if (MembersChanged != null) { MembersChanged(this, changes); }
+        }
+
         private Task<bool> joinTask;
         private ChannelState oldState;
         public async Task<bool> Join()
