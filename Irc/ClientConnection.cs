@@ -364,9 +364,9 @@ namespace HeadlessMetaverseClient.Irc
             }
         }
 
-        private void ChannelListLoaded(IEnumerable<IChannel> channels)
+        private void ChannelListLoaded(IEnumerable<IChannel> loadedChannels)
         {
-            foreach (var i in channels)
+            foreach (var i in loadedChannels)
             {
                 if (!this.channels.ContainsKey(i.IrcName))
                 {

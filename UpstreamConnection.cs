@@ -9,11 +9,10 @@ namespace HeadlessMetaverseClient
 {
     class UpstreamConnection : IUpstreamConnection
     {
-        const string CHANNEL = "HeadlessSlClient";
+        const string CHANNEL = "HeadlessMetaverseClient";
         const string VERSION = "0.1";
 
         private IIdentityMapper mapper;
-        private string loginUri;
         private Dictionary<UUID, GroupChannel> channels;
         private LocalChannel localChannel;
         private GridClient client;
@@ -26,7 +25,6 @@ namespace HeadlessMetaverseClient
 
         public UpstreamConnection(string loginUri, string gridName)
         {
-            this.loginUri = loginUri;
             this.client = new GridClient();
             client.Settings.LOGIN_SERVER = loginUri;
             client.Settings.MULTIPLE_SIMS = false;
@@ -294,46 +292,18 @@ namespace HeadlessMetaverseClient
             if (e.Status != LoginStatus.Failed)
             {
                 msg = new IntermediateMessage(mapper.Grid, MessageType.ClientNotice);
-                msg.Payload = e.Status.ToString() + (e.Message != "" ? ": " + e.Message : "");
+                msg.Payload = e.Status.ToString() + (String.IsNullOrEmpty(e.Message) ? ": " + e.Message : "");
             }
             else
             {
                 msg = new IntermediateMessage(mapper.Grid, MessageType.ClientError);
-                msg.Payload = e.Status.ToString() + (e.Message != "" ? ": " + e.Message : "");
+                msg.Payload = e.Status.ToString() + (String.IsNullOrEmpty(e.Message) ? ": " + e.Message : "");
                 msg.Payload += " (" + e.FailReason + ")";
             }
 
             if (ReceiveMessage != null)
             {
                 ReceiveMessage(null, msg);
-            }
-        }
-
-        private void LoadGroups()
-        {
-            var msg = IntermediateMessage.ClientNotice(mapper.Grid, "Loading group list");
-            if (ReceiveMessage != null)
-            {
-                ReceiveMessage(null, msg);
-            }
-
-            var signal = new System.Threading.AutoResetEvent(false);
-            EventHandler<CurrentGroupsEventArgs> handler = null;
-            handler = delegate(object o, CurrentGroupsEventArgs e)
-            {
-                groups = e.Groups;
-                client.Groups.CurrentGroups -= handler;
-            };
-            client.Groups.CurrentGroups += handler;
-            client.Groups.RequestCurrentGroups();
-
-            if (!signal.WaitOne(20000))
-            {
-                msg = IntermediateMessage.ClientNotice(mapper.Grid, "Group load failed!");
-                if (ReceiveMessage != null)
-                {
-                    ReceiveMessage(null, msg);
-                }
             }
         }
     }

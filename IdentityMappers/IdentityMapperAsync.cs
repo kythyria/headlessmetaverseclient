@@ -322,7 +322,7 @@ namespace HeadlessMetaverseClient
         }
 
         static readonly Regex reNonChannelChars = new Regex(@"[^-A-Za-z0-9\._ ]");
-        private string MakeIrcName(string input, string joiner = "")
+        private static string MakeIrcName(string input, string joiner = "")
         {
             var preparedInput = reNonChannelChars.Replace(input, "");
             return preparedInput.CamelCase(joiner);

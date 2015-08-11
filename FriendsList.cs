@@ -10,9 +10,6 @@ namespace HeadlessMetaverseClient
 {
     class FriendsList : Irc.IRawMessageHandler
     {
-
-        private object syncRoot = new object();
-
         private GridClient client;
 
         private Irc.IRawMessageSink downstream;

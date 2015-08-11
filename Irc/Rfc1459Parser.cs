@@ -55,7 +55,7 @@ namespace HeadlessMetaverseClient.Irc
             if (msg.Tags.Count > 0) { throw new NotImplementedException(); }
 
             var output = new StringBuilder();
-            if(msg.Sender != null && msg.Sender != "")
+            if(!string.IsNullOrEmpty(msg.Sender))
             {
                 output.Append(":").Append(msg.Sender).Append(" ");
             }
@@ -67,7 +67,7 @@ namespace HeadlessMetaverseClient.Irc
                 output.Append(" ");
                 if (argcopy.Count == 1)
                 {
-                    if(argcopy.Peek() == "" || argcopy.Peek().Contains(" ") || argcopy.Peek().First() == ':')
+                    if(String.IsNullOrEmpty(argcopy.Peek()) || argcopy.Peek().Contains(" ") || argcopy.Peek().First() == ':')
                     {
                         output.Append(":");
                     }
