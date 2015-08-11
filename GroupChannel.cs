@@ -69,7 +69,7 @@ namespace HeadlessMetaverseClient
                     {
                         var cm = new ChannelMembership();
                         cm.IsOperator = false;
-                        cm.Position = PositionCategory.Talk;
+                        cm.Position = PositionCategory.Distant;
                         cm.Subject = mapper.MapUser(client.Self.AgentID);
                         outlist.Add(cm);
                     }

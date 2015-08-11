@@ -23,7 +23,9 @@ where you tried to log in too soon after logging out or crashing).
  * Friend presence, using [`MONITOR`](http://ircv3.net/specs/core/monitor-3.2.html) to report/
    display it.
    * You can't add or remove people, only see their presence.
- * In theory (this is untested), RLV `@sit` and `@redirchat`
+   * You need a client that sensibly handles `730` and `731` for nicks it hasn't previously sent
+     `MONITOR +` for.
+ * RLV `@sit`. `@redirchat` sometimes works.
 
 ## Things that definitely don't work
  * Getting a correct list of who's in a groupchat with you (regular clients can't do this either)
@@ -34,4 +36,5 @@ where you tried to log in too soon after logging out or crashing).
 
 ## Building
 You'll probably need to correct the references to Libopenmetaverse, and you'll need to supply an
-openmetaverse_data directory (put it next to the .exe) or your appearance may not bake.
+openmetaverse_data directory (put it next to the .exe) or your appearance may not bake (at least on
+OpenSim grids. SL seems to be fine.).

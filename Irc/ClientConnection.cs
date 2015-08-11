@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.IO;
 using System.Net.Sockets;
@@ -46,14 +47,14 @@ namespace HeadlessMetaverseClient.Irc
         Dictionary<string, RawMessageHandler> handlerCallbacks;
 
         MappedIdentity selfId;
-        Dictionary<string, IChannel> channels;
+        ConcurrentDictionary<string, IChannel> channels;
 
         public ClientConnection(Socket connection, IUpstreamConnection upstream, IIdentityMapper mapper)
         {
             this.connection = connection;
             this.upstream = upstream;
             this.mapper = mapper;
-            this.channels = new Dictionary<string, IChannel>();
+            this.channels = new ConcurrentDictionary<string, IChannel>();
             this.handlers = new HashSet<IRawMessageHandler>();
             handlerCallbacks = new Dictionary<string, RawMessageHandler>();
 
