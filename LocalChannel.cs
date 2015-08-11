@@ -285,7 +285,7 @@ namespace HeadlessMetaverseClient
         private void Rlv(string str)
         {
             if (!str.StartsWith("@")) { return; }
-            var match = reRlvCommand.Match(str);
+            var match = reRlvCommand.Match(str.Substring(1));
             
             if(match.Success)
             {
