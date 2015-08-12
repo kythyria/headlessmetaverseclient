@@ -22,7 +22,7 @@ namespace HeadlessMetaverseClient
         System
     }
 
-    class MappedIdentity
+    class MappedIdentity : IFormattable
     {
         public IdentityCategory Type;
         public OpenMetaverse.UUID AvatarID;
@@ -51,6 +51,41 @@ namespace HeadlessMetaverseClient
         public MappedIdentity(IdentityCategory identityCategory)
         {
             this.Type = identityCategory;
+        }
+
+        override public string ToString()
+        {
+            var output = new StringBuilder("{");
+            switch(Type)
+            {
+                case IdentityCategory.Agent:
+                    output.Append("AgentIdentity");
+                    break;
+                case IdentityCategory.Object:
+                    output.Append("ObjectIdentity");
+                    break;
+                case IdentityCategory.System:
+                    output.Append("SystemIdentity}");
+                    return output.ToString();
+            }
+            output.Append(":");
+            output.Append((String.IsNullOrWhiteSpace(SlName) ? AvatarID.ToString() : SlName));
+            return output.ToString();
+        }
+
+        public string ToString(string format, IFormatProvider formatProvider)
+        {
+            if (String.IsNullOrEmpty(format)) { return ToString(); }
+
+            switch(format.ToLowerInvariant())
+            {
+                case "ircnick":
+                    return IrcNick;
+                case "slname":
+                    return SlName;
+                default:
+                    return ToString();
+            }
         }
     }
 }

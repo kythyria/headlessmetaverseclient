@@ -14,12 +14,14 @@ namespace HeadlessMetaverseClient
 
         private Irc.IRawMessageSink downstream;
         private IIdentityMapper mapper;
+        private Configuration config;
 
-        public FriendsList(IUpstreamConnection connection, Irc.IRawMessageConnection downstream)
+        public FriendsList(IUpstreamConnection connection, Irc.IRawMessageConnection downstream, Configuration conf)
         {
             this.downstream = downstream;
             this.client = connection.Client;
             this.mapper = connection.Mapper;
+            this.config = conf;
             client.Friends.FriendOnline += GridClient_FriendPresenceChanged;
             client.Friends.FriendOffline += GridClient_FriendPresenceChanged;
 
@@ -32,11 +34,35 @@ namespace HeadlessMetaverseClient
 
             if(e.Friend.IsOnline)
             {
-                downstream.SendNumeric(Numeric.RPL_MONONLINE, mappedFriend.IrcNick);
+                SendOnline(mappedFriend);
+            }
+            else
+            {
+                SendOffline(mappedFriend);
+            }
+        }
+
+        private void SendOffline(MappedIdentity mappedFriend)
+        {
+            if (config.PresenceNotices)
+            {
+                downstream.SendFromServer("NOTICE", downstream.ClientNick, "[PRESENCE] {0:IrcNick} is now offline".Format(mappedFriend));
             }
             else
             {
                 downstream.SendNumeric(Numeric.RPL_MONOFFLINE, mappedFriend.IrcNick);
+            }
+        }
+
+        private void SendOnline(MappedIdentity mappedFriend)
+        {
+            if (config.PresenceNotices)
+            {
+                downstream.SendFromServer("NOTICE", downstream.ClientNick, "[PRESENCE] {0:IrcNick} is now online".Format(mappedFriend));
+            }
+            else
+            {
+                downstream.SendNumeric(Numeric.RPL_MONONLINE, mappedFriend.IrcNick);
             }
         }
 

@@ -13,6 +13,8 @@ namespace HeadlessMetaverseClient
     {
         static void Main(string[] args)
         {
+            var config = new Configuration(args);
+
             Socket socket = Listen();
 
             while(true)
@@ -21,7 +23,7 @@ namespace HeadlessMetaverseClient
 
                 var us = new UpstreamConnection("https://login.agni.lindenlab.com/cgi-bin/login.cgi", "agni.lindenlab.com");
                 var ds = new Irc.ClientConnection(connection, us, us.Mapper);
-                var friendlist = new FriendsList(us, ds);
+                var friendlist = new FriendsList(us, ds, config);
                 ds.Run();
             }
 

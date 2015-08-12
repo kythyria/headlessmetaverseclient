@@ -10,6 +10,9 @@ Log in using your SL name thusly as your nick, and your SL password as the serve
 that error handling is sub-par so errors might not be sent to your client (this includes the one
 where you tried to log in too soon after logging out or crashing).
 
+If your client doesn't display the numerics used for presence sensibly (such as irssi), pass
+`--presence-notices` on the command line and they'll be sent as `NOTICE` instead.
+
 ## Supported:
 
  * Logging in
@@ -23,8 +26,7 @@ where you tried to log in too soon after logging out or crashing).
  * Friend presence, using [`MONITOR`](http://ircv3.net/specs/core/monitor-3.2.html) to report/
    display it.
    * You can't add or remove people, only see their presence.
-   * You need a client that sensibly handles `730` and `731` for nicks it hasn't previously sent
-     `MONITOR +` for.
+   * Your client needs to be okay with the server prepopulating the MONITOR list.
  * RLV `@sit`. `@redirchat` sometimes works.
 
 ## Things that definitely don't work
