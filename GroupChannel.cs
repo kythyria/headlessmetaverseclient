@@ -147,6 +147,8 @@ namespace HeadlessMetaverseClient
             var changes = new ChannelMemberChangeEventArgs();
             var newmember = new ChannelMemberChangeEventArgs.ChangeDetails();
             newmember.Subject = mapper.MapUser(AgentId);
+            newmember.NewPosition = PositionCategory.Distant;
+            newmember.OldPosition = PositionCategory.Distant;
             client.Self.GroupChatSessions.Lock(d =>
             {
                 var cachedMembership = d[group.ID].FirstOrDefault(i => i.AvatarKey == AgentId);

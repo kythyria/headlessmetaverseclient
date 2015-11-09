@@ -359,7 +359,9 @@ namespace HeadlessMetaverseClient.Irc
                         tokens.AddRange(i.SupportTokens);
                     }
 
-                    SendFromServer(Numeric.RPL_ISUPPORT, username, String.Join(" ", tokens));
+                    tokens.Add("are supported by this server");
+
+                    SendNumeric(Numeric.RPL_ISUPPORT, tokens.ToArray());
                     state = ConnectionState.CONNECTED;
                 }
             }

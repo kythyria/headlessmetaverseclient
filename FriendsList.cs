@@ -107,6 +107,13 @@ namespace HeadlessMetaverseClient
                     });
                     downstream.Send(msglist);
                     break;
+                case "NON":
+                    client.Friends.FriendList.ForEach(i =>
+                    {
+                        if(!i.Value.IsOnline) { return; }
+                        downstream.SendFromServer("NOTICE", downstream.ClientNick, "[PRESENCE] {0:IrcNick} is now online".Format(mapper.MapUser(i.Key, i.Value.Name)));
+                    });
+                    break;
             }
         }
 

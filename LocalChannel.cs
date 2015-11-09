@@ -267,7 +267,7 @@ namespace HeadlessMetaverseClient
             else if (e.Type == ChatType.OwnerSay)
             {
                 msg.Type = MessageType.OwnerSay;
-                Rlv(msg.Payload);
+                if(Rlv(msg.Payload)) { return; }
             }
 
             SendMessageDownstream(msg);
@@ -281,18 +281,18 @@ namespace HeadlessMetaverseClient
             }
         }
 
-        static readonly Regex reRlvCommand = new Regex(@"(?<command>[^:=]*)(?::(?<option>[^=]*))?=(?<param>.*)(?:,|$)");
-        private void Rlv(string str)
+        static readonly Regex reRlvCommand = new Regex(@"@(?<command>[^:=]*)(?::(?<option>[^=]*))?=(?<param>.*)(?:,|$)");
+        private bool Rlv(string str)
         {
-            if (!str.StartsWith("@")) { return; }
-            var match = reRlvCommand.Match(str.Substring(1));
+            var match = reRlvCommand.Match(str);
             
             if(match.Success)
             {
+                OpenMetaverse.Logger.Log(string.Format("RLV: @{0}:{1}={2}",match.Groups["command"].Value, match.Groups["option"].Value, match.Groups["param"].Value), OpenMetaverse.Helpers.LogLevel.Info);
                 if(match.Groups["command"].Value == "sit" && match.Groups["option"].Success)
                 {
+                    client.Self.Stand();
                     client.Self.RequestSit(UUID.Parse(match.Groups["option"].Value), Vector3.Zero);
-                    client.Self.Sit();
                 }
                 else if(match.Groups["command"].Value == "redirchat" && match.Groups["option"].Success)
                 {
@@ -302,6 +302,8 @@ namespace HeadlessMetaverseClient
                     }
                 }
             }
+
+            return match.Success;
         }
     }
 }
