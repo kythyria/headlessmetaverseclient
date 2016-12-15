@@ -27,16 +27,21 @@ If your client doesn't display the numerics used for presence sensibly (such as 
    display it.
    * You can't add or remove people, only see their presence.
    * Your client needs to be okay with the server prepopulating the MONITOR list.
- * RLV `@sit`. `@redirchat` sometimes works.
+   * The command-line option `--presence-notices` sends you a `NOTICE` every time a friend's presence
+     changes, instead of `MONITOR` numerics.
+   * Send `MONITOR NON` to get notices listing who's currently online.
+ * RLV `@sit` and `@sendchat`. `@redirchat` may work.
+ * You can see `llDialog()`s but not respond to them.
 
 ## Things that definitely don't work
  * Getting a correct list of who's in a groupchat with you (regular clients can't do this either)
  * Closing groupchats (you'll be forcibly rejoined)
  * Adding or removing friends
  * Joining or leaving groups
+ * Teleport requests (you'll send an autoreply to whoever asked you to teleport).
  * Pretty much everything else.
 
 ## Building
-You'll probably need to correct the references to Libopenmetaverse, and you'll need to supply an
+You'll probably need to correct the references to [libopenmetaverse](https://github.com/openmetaversefoundation/libopenmetaverse), and you'll need to supply an
 openmetaverse_data directory (put it next to the .exe) or your appearance may not bake (at least on
 OpenSim grids. SL seems to be fine.).
