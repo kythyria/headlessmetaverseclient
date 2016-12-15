@@ -65,6 +65,11 @@ namespace HeadlessMetaverseClient
             throw new NotImplementedException();
         }
 
+        public void SendNonzeroLocal(int chan, string msg)
+        {
+            client.Self.Chat(msg, chan, ChatType.Normal);
+        }
+
         public void SendMessageTo(MappedIdentity destination, IntermediateMessage msg)
         {
             UUID session;
@@ -95,8 +100,17 @@ namespace HeadlessMetaverseClient
                 client.Self.IM += OnIM;
                 client.Self.ChatSessionMemberAdded += OnChatSessionMemberAdded;
                 client.Self.ChatSessionMemberLeft += OnChatSessionMemeberLeft;
+                client.Self.ScriptDialog += OnScriptDialog;
 
                 client.Groups.CurrentGroups += OnGroupListLoaded;
+
+                /*// Announce that the local channel exists
+                if (this.ChannelListLoaded != null)
+                {
+                    ChannelListLoaded(new[] { localChannel });
+                }*/
+
+                //client.Groups.RequestCurrentGroups();
             }
 
             return success;
@@ -213,6 +227,24 @@ namespace HeadlessMetaverseClient
                     break;
                 default:
                     break;
+            }
+        }
+
+        private void OnScriptDialog(object sender, ScriptDialogEventArgs e)
+        {
+            var mlines = e.Message.Split('\n').Select(i => "[DIALOG] " + i).ToList();
+            mlines.Insert(0, "[DIALOG] ------------------------------------------");
+            mlines.Insert(1, string.Format("[DIALOG] {0} {1}'s \"{2}\" ({3})", e.FirstName, e.LastName, e.ObjectName, e.Channel));
+            mlines.AddRange(e.ButtonLabels.ChunkTrivialBetter(3).Select(i => "[DIALOG] " + string.Join(" ", i.Select(j => string.Format("[{0,-24}]", j)))).Reverse());
+            mlines.Add("[DIALOG] ------------------------------------------");
+            foreach (var i in mlines)
+            {
+                var msg = new IntermediateMessage();
+                msg.Sender = mapper.Grid;
+                msg.Timestamp = DateTime.UtcNow;
+                msg.Type = MessageType.ObjectIM;
+                msg.Payload = i;
+                localChannel.SendMessageDownstream(msg);
             }
         }
 

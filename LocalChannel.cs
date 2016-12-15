@@ -20,6 +20,7 @@ namespace HeadlessMetaverseClient
         private OpenMetaverse.GridClient client;
         private IIdentityMapper mapper;
         private int chatChannel = 0;
+        private bool canTalk = true;
         private ChannelState state = ChannelState.Unconnected;
 
         private Dictionary<string, Dictionary<UUID, ChannelMembership>> nearby;
@@ -51,7 +52,17 @@ namespace HeadlessMetaverseClient
 
         public void SendMessage(IntermediateMessage msg)
         {
-            client.Self.Chat(msg.Payload, chatChannel, ChatType.Normal);
+            if (canTalk || msg.Payload.StartsWith("/") || msg.Payload.StartsWith("(("))
+            {
+                client.Self.Chat(msg.Payload, chatChannel, ChatType.Normal);
+            }
+            else
+            {
+                var retort = new IntermediateMessage(mapper.Grid, MessageType.ClientNotice);
+                retort.Payload = "You are mute";
+                SendMessageDownstream(retort);
+                client.Self.Chat("...", chatChannel, ChatType.Normal);
+            }
         }
 
         public event ReceiveMessageHandler ReceiveMessage;
@@ -109,7 +120,14 @@ namespace HeadlessMetaverseClient
                 membership.Subject = detail.Subject;
                 membership.IsOperator = false;
                 membership.Position = CategorisePosition(i, e);
-                nearbyAvatars.Add(i,membership);
+                if (nearbyAvatars.ContainsKey(i))
+                {
+                    nearbyAvatars[i] = membership;
+                }
+                else
+                {
+                    nearbyAvatars.Add(i, membership);
+                }
             }
 
             foreach(var i in e.RemovedEntries)
@@ -226,6 +244,9 @@ namespace HeadlessMetaverseClient
                 return;
             }
 
+
+            System.Diagnostics.Debug.WriteLine("Local chat: <{1}> {0}", e.Message, e.FromName);
+
             var msg = new IntermediateMessage();
             msg.Payload = e.Message;
             
@@ -300,6 +321,27 @@ namespace HeadlessMetaverseClient
                     {
                         chatChannel = int.Parse(match.Groups["option"].Value);
                     }
+                }
+                else if (match.Groups["command"].Value == "versionnew" && match.Groups["param"].Success)
+                {
+                    int chan;
+                    if (int.TryParse(match.Groups["param"].Value, out chan))
+                    {
+                        client.Self.Chat("RestrainedLove viewer v1.22", chan, ChatType.Normal);
+                    }
+                }
+                else if (match.Groups["command"].Value == "versionnum" && match.Groups["param"].Success)
+                {
+                    int chan;
+                    if (int.TryParse(match.Groups["param"].Value, out chan))
+                    {
+                        client.Self.Chat("1220000", chan, ChatType.Normal);
+                    }
+                }
+                else if (match.Groups["command"].Value == "sendchat" && match.Groups["param"].Success)
+                {
+                    var p = match.Groups["param"].Value.ToLowerInvariant();
+                    this.canTalk = (p != "n");
                 }
             }
 

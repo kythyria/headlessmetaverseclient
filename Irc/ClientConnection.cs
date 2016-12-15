@@ -234,6 +234,14 @@ namespace HeadlessMetaverseClient.Irc
                 outmsg.Type = MessageType.Talk;
                 channels[msg.Argv[0]].SendMessage(outmsg);
             }
+            else if(msg.Argv[0].StartsWith("+"))
+            {
+                int chan;
+                if (int.TryParse(msg.Argv[0].Substring(1), out chan))
+                {
+                    upstream.SendNonzeroLocal(chan, msg.Argv[1]);
+                }
+            }
             else
             {
                 outmsg.Type = MessageType.IM;
@@ -376,8 +384,8 @@ namespace HeadlessMetaverseClient.Irc
                     i.Join().ContinueWith(t =>
                     {
                         RegisterChannelHandlers(i);
-                        this.channels[i.IrcName] = i;
                         Send(ChannelJoinMessages(i));
+                        this.channels[i.IrcName] = i;
                     });
                 }
             }
@@ -393,8 +401,12 @@ namespace HeadlessMetaverseClient.Irc
 
         private void RegisterChannelHandlers(IChannel i)
         {
-            i.ReceiveMessage += ReceiveChannelMessage;
-            i.MembersChanged += ChannelMembersChanged;
+            if (!this.channels.ContainsKey(i.IrcName))
+            {
+                System.Diagnostics.Debug.WriteLine("Irc.ClientConnection.RegisterChannelHandlers({0}{1})", i.IrcName, "");
+                i.ReceiveMessage += ReceiveChannelMessage;
+                i.MembersChanged += ChannelMembersChanged;
+            }
         }
 
         private void ChannelMembersChanged(IChannel target, ChannelMemberChangeEventArgs args)
@@ -442,6 +454,8 @@ namespace HeadlessMetaverseClient.Irc
 
         private void ReceiveChannelMessage(IChannel target, IntermediateMessage msg)
         {
+            System.Diagnostics.Debug.WriteLine("Irc.ClientConnection.ReceiveChannelMessage({0}, {{ T:{1} S:{2} M:{3} }})", target.IrcName, msg.Type, msg.Sender.IrcNick, msg.Payload);
+
             if(msg.Type == MessageType.ClientNotice)
             {
                 Send(LOCALNICK, "PRIVMSG", target.IrcName, msg.Payload);

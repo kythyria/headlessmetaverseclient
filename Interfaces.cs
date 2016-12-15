@@ -49,7 +49,8 @@ namespace HeadlessMetaverseClient
         AwayMessage,
         ClientNotice,
         ClientError,
-        ObjectIM
+        ObjectIM,
+        NonzeroChannelMsg
     }
 
     class IntermediateMessage
@@ -145,6 +146,8 @@ namespace HeadlessMetaverseClient
 
         GridClient Client { get; }
         IIdentityMapper Mapper { get; }
+
+        void SendNonzeroLocal(int chan, string v);
     }
 
     interface IUpstreamChannel
