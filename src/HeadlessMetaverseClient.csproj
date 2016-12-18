@@ -31,18 +31,27 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>$(SolutionDir)\bin\$(Configuration)-$(Platform)\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>$(SolutionDir)\bin\$(Configuration)-$(Platform)\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OpenMetaverse">
-      <HintPath>..\..\libopenmetaverse\bin\OpenMetaverse.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenMetaverse.StructuredData, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libopenmetaverse\bin\OpenMetaverse.StructuredData.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenMetaverseTypes, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\libopenmetaverse\bin\OpenMetaverseTypes.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -78,12 +87,31 @@
     <None Include="App.config" />
     <None Include="..\README.md" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse.StructuredData\OpenMetaverse.StructuredData.csproj">
+      <Project>{d71e8f0b-3029-45bb-ac90-039160003617}</Project>
+      <Name>OpenMetaverse.StructuredData</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\libopenmetaverse\OpenMetaverseTypes\OpenMetaverseTypes.csproj">
+      <Project>{e7b4a93c-856a-4091-ba2f-e1227591e556}</Project>
+      <Name>OpenMetaverseTypes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\libopenmetaverse\OpenMetaverse\OpenMetaverse.csproj">
+      <Project>{68dfc5ad-6adf-4712-9ccb-fedda0d6e815}</Project>
+      <Name>OpenMetaverse</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
+       Other similar extension points exist, see Microsoft.Common.targets.-->
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
+    <ItemGroup>
+      <OpenMetaverseData Include="$(SolutionDir)libopenmetaverse\bin\openmetaverse_data\*.*"/>
+    </ItemGroup>
+    <Message Text="@(OpenMetaverseData)" Importance="high"/>
+    <Copy SourceFiles="@(OpenMetaverseData)" DestinationFolder="$(OutputPath)openmetaverse_data\"/>
   </Target>
-  -->
+  
 </Project>

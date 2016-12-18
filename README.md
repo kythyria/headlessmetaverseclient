@@ -42,6 +42,4 @@ If your client doesn't display the numerics used for presence sensibly (such as 
  * Pretty much everything else.
 
 ## Building
-You'll probably need to correct the references to [libopenmetaverse](https://github.com/openmetaversefoundation/libopenmetaverse), and you'll need to supply an
-openmetaverse_data directory (put it next to the .exe) or your appearance may not bake (at least on
-OpenSim grids. SL seems to be fine.).
+You will need to run `libopenmetaverse/runprebuild2013.bat` before the project will load.
